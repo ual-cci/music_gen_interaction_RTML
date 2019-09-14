@@ -1,0 +1,18 @@
+
+jack_lsp -A
+# see a list of connections on the pc
+
+alsamixer
+# see everything including the sound card and other devices
+
+
+
+
+#####
+1.) ./run_jackd.sh
+
+jackd -R -d alsa -d hw:1,0
+# check with:
+jack_lsp -A
+# that we have "system:capture_1" and "system:playback_1"
+
