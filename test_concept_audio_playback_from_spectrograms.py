@@ -68,7 +68,12 @@ DEMO_MAKE_FROM_WAV_FILE = True
 
 if DEMO_LOAD_FROM_SPECTROGRAMS:
     sample_rate = 44100
-    fft_settings = [2048, 1024, 512]
+    #fft_settings = [2048, 1024, 512]
+    fft_settings = [2048, 2024, 512] # test with longer window - should have better resolution in frq. but worse in time
+    # sounds better obv...
+
+    tmpname = "test1_withWindowSize2048"
+
     fft_size = fft_settings[0]
     window_size = fft_settings[1]
     hop_size = fft_settings[2]
@@ -82,13 +87,14 @@ if DEMO_LOAD_FROM_SPECTROGRAMS:
         audio_data_path = "/media/vitek/Data/Vitek/Projects/2019_LONDON/music generation/small_file/"
         dataset.load(audio_data_path, force=True, prevent_shuffling=True)
 
+        tmp_y_frames = dataset.y_frames[0:6000]
+        #import numpy as np
+        #np.save("data/tmp_y_frames_6000NoShuffle.npy", dataset.y_frames[0:6000])
+    else:
         import numpy as np
-        np.save("data/tmp_y_frames_6000NoShuffle.npy", dataset.y_frames[0:6000])
+        tmp_y_frames = np.load("data/tmp_y_frames_6000NoShuffle.npy")
 
-
-    import numpy as np
     print("using converted spectrograms")
-    tmp_y_frames = np.load("data/tmp_y_frames_6000NoShuffle.npy")
     print("tmp_y_frames hard loaded:", tmp_y_frames.shape)
 
     def griffin_lim(stftm_matrix, max_iter=100):
@@ -120,9 +126,9 @@ if DEMO_LOAD_FROM_SPECTROGRAMS:
     import librosa
     # and convert the spectrograms to audio signal
     audio = [griffin_lim(predicted_magnitudes.T, griffin_iterations)]
-    #np.save("data/tmp_audio_reconstructed.npy", audio)
     audio = np.asarray(audio[0])
     print("audio.shape", audio.shape)
+    # window size 2048 => audio.shape (1024000,)
 
     ###### or directly reload audio signal:
     """
@@ -132,8 +138,8 @@ if DEMO_LOAD_FROM_SPECTROGRAMS:
     """
 
     sample_rate = 44100
-    print("saving the audio file for inspection into data/testconcept2_testing.wav")
-    librosa.output.write_wav('data/testconcept2_testing.wav', audio, sample_rate)
+    print("saving the audio file for inspection into data/testconcept2_testing"+tmpname+".wav")
+    librosa.output.write_wav('data/testconcept2_testing_'+tmpname+'.wav', audio, sample_rate)
 
 def get_audio_random():
     data = np.random.rand(blocksize, )
