@@ -124,3 +124,22 @@ class ModelHandlerLSTM(object):
         model = tflearn.DNN(net, tensorboard_verbose=1)
 
         self.model = model
+
+
+# Example calls and outputs:
+"""
+test_handler = ModelHandlerLSTM()
+test_handler.create_model()
+
+model = test_handler.model
+print(model)
+print(model.net)
+print(model.inputs)
+print(model.targets)
+
+
+#<tflearn.models.dnn.DNN object at 0x7f8938542e80>
+#Tensor("FullyConnected_1/BiasAdd:0", shape=(?, 1025), dtype=float32)
+#[<tf.Tensor 'input_data0/X:0' shape=(?, 40, 1025) dtype=float32>]
+#[<tf.Tensor 'TargetsData/Y:0' shape=(?, 1025) dtype=float32>]
+"""
