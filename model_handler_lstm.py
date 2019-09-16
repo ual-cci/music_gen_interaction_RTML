@@ -210,11 +210,15 @@ print(model.net)
 print(model.inputs)
 print(model.targets)
 
+
 #<tflearn.models.dnn.DNN object at 0x7f8938542e80>
 #Tensor("FullyConnected_1/BiasAdd:0", shape=(?, 1025), dtype=float32)
 #[<tf.Tensor 'input_data0/X:0' shape=(?, 40, 1025) dtype=float32>]
 #[<tf.Tensor 'TargetsData/Y:0' shape=(?, 1025) dtype=float32>]
 #"""
+
+pretrained_path = "/media/vitek/Data/Vitek/Projects/2019_LONDON/music generation/saved_models/trained_model_last___dnb1_300ep_default.tfl"
+model.load(pretrained_path)
 
 # Second part of the example ...
 from utils.audio_dataset_generator import AudioDatasetGenerator
