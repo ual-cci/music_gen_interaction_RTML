@@ -1,3 +1,7 @@
+# Code from https://github.com/Louismac/MAGNet
+# https://github.com/Louismac/MAGNet/blob/master/utils/audio_dataset_generator.py
+# because we are adding upon that LSTM model
+
 import os
 import sys
 import random
