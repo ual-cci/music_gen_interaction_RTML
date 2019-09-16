@@ -3,7 +3,7 @@
 import numpy as np
 import tensorflow as tf
 import tflearn
-from tflearn.layers.recurrent import bidirectional_rnn, BasicLSTMCell
+from tflearn.layers.recurrent import bidirectional_rnn, BasicLSTMCell, GRUCell
 from tflearn.layers.core import dropout
 from tflearn.layers.conv import conv_2d, max_pool_2d
 from utils.audio_dataset_generator import AudioDatasetGenerator
@@ -142,7 +142,6 @@ class ModelHandlerLSTM(object):
         shape = (1, dimension1, dimension2, 1) if self.use_cnn else (1, dimension1, dimension2)
 
         audio = []
-        impulses = []
 
         if self.use_wavelets:
             temp_audio = np.array(0)
@@ -158,9 +157,7 @@ class ModelHandlerLSTM(object):
                     recon = (pywt.waverecn(coeffs, wavelet=self.wavelet))
                     temp_audio = np.append(temp_audio, recon)
             for j in range(sequence_length_max):
-                prediction = model.predict(impulse.reshape(shape))
-
-                ##impulses += [impulse] ## << mem issues
+                prediction = self.model.predict(impulse.reshape(shape))
 
                 # Wavelet audio
                 if self.use_wavelets:
@@ -169,7 +166,7 @@ class ModelHandlerLSTM(object):
                     temp_audio = np.append(temp_audio, recon)
 
                 if self.use_cnn:
-                    prediction = prediction.reshape(1, dataset.y_frames.shape[1], 1)
+                    prediction = prediction.reshape(1, self.output_shapes[1], 1)
 
                 # print("prediction.shape", prediction.shape)
                 # prediction.shape (1, 1025)
@@ -181,7 +178,7 @@ class ModelHandlerLSTM(object):
                 # print("impulse.shape", impulse.shape)
 
                 if (np.random.random_sample() < random_chance):
-                    idx = np.random.randint(0, dataset.sequence_length)
+                    idx = np.random.randint(0, self.sequence_length)
                     impulse[idx] = impulse[idx] + np.random.random_sample(impulse[idx].shape) * random_strength
 
                 done = int(float(i * sequence_length_max + j) / float(amount_samples * sequence_length_max) * 100.0) + 1
@@ -218,7 +215,7 @@ print(model.targets)
 #"""
 
 pretrained_path = "/media/vitek/Data/Vitek/Projects/2019_LONDON/music generation/saved_models/trained_model_last___dnb1_300ep_default.tfl"
-model.load(pretrained_path)
+test_handler.model.load(pretrained_path)
 
 # Second part of the example ...
 from utils.audio_dataset_generator import AudioDatasetGenerator
