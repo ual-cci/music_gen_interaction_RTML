@@ -1,0 +1,58 @@
+Project structure:
+
+
+client side:
+------------
+
+client.py // handles audio playback on client pc
+client_functions.py // has anything more complicated in it (so that the client.py is as short as possible) 
+
+
+
+server side:
+------------
+
+server.py // flask server handles points of entry
+		  // every point calls something from the other server side handlers
+	- get_audio(number_of_samples)
+		audio = server_handle.get_audio(number_of_samples)
+		response = {audio ....}
+
+
+	(LATER)
+			- seed_with_sample_i(i, j) // can sample with older sample and specific part of it (0 to 100% of the song)
+				server_handle.seed_with_sample_i(i)
+				response = {success? time? ....}
+
+			- seed_with_audio(audio - mp3? - file? - data?)
+				server_handle.seed_with_audio( ...xyz... )
+				response = {success? time? number_of_samples_now? ....}
+
+
+(server)_handler? 
+- this one has all the other handlers and calls preparatory functions (so that the server.py is as short as possible)
+
+	modelHandler = new {}
+	audioHandler = new {}
+
+	server_handle.get_audio(number_of_samples)
+		gen_spectro = modelHandler.generate_sample( ... )
+		audio = audioHandler.spectro2audio(gen_spectro)
+		return audio
+
+	(LATER)
+			server_handle.seed_with_sample_i(i)
+			server_handle.seed_with_audio( ...xyz... )
+
+
+audio_handler.py // has functions to handle audio (audio2spectro and back + all algorithms to do it (reuse Luises code))
+	- audio2spectrograms()
+		(if waveforms / if cnns / if whatever else Luis had)
+	- spectro2audio() // uses griffin_lim()
+
+model_handler.py // has functions to create model and generate stuff from it
+	- self.model = None
+	- create_model() // self.model = XYZ
+	- out = predict(in)
+	- spectro = generate_samples( instructions )
+
