@@ -88,6 +88,10 @@ class ModelHandlerLSTM(object):
         # auto init?
         #self.model = create_model()
 
+    def load_model(self, path = "/media/vitek/Data/Vitek/Projects/2019_LONDON/music generation/saved_models/trained_model_last___dnb1_300ep_default.tfl"):
+        print("Loading a pretrained model")
+        self.model.load(path)
+
     def create_model(self, sequence_length = 40):
         self.sequence_length = sequence_length
         #self.sequence_length = 45
@@ -131,88 +135,37 @@ class ModelHandlerLSTM(object):
 
         self.model = model
 
-    def generate(self, dataset, amount_samples = 8, sequence_length_max = 700):
-        # Dataset
-        self.use_wavelets = False
-        self.wavelet = 'db10'
-        self.window_size = 1024
+    def generate_sample(self, input_impulse, requested_length, window_size=1024):
 
-        TMP_SAVE_IMPULSES = True
-
-        impulse_scale = 1.0
-        griffin_iterations = 60
-        random_chance = 0.8
+        random_chance = 0.0
         random_strength = 0.8
 
         dimension1 = self.input_shapes[1]
         dimension2 = self.input_shapes[2]
-        shape = (1, dimension1, dimension2, 1) if self.use_cnn else (1, dimension1, dimension2)
 
-        audio = []
-        impulses = []
+        predicted_magnitudes = input_impulse
+        for j in range(requested_length):
+            shape = (1, dimension1, dimension2, 1) if self.use_cnn else (1, dimension1, dimension2)
+            prediction = self.model.predict(input_impulse.reshape(shape))
 
-        if self.use_wavelets:
-            temp_audio = np.array(0)
-        for i in range(amount_samples):
+            if self.use_cnn:
+                prediction = prediction.reshape(1, self.output_shapes[1], 1)
 
-            random_index = np.random.randint(0, (len(dataset.x_frames) - 1))
-            impulse = np.array(dataset.x_frames[random_index]) * impulse_scale
+            # add the last prediction to the predicted_magnitudes
+            predicted_magnitudes = np.vstack((predicted_magnitudes, prediction))
+            input_impulse = predicted_magnitudes[-self.sequence_length:]
 
-            ## TODO: save 100 random impulses (and test them if they work also...)
-            if TMP_SAVE_IMPULSES:
-                impulses.append(impulse)
+            # mix in?
+            if (np.random.random_sample() < random_chance):
+                idx = np.random.randint(0, self.sequence_length)
+                input_impulse[idx] = input_impulse[idx] + np.random.random_sample(input_impulse[idx].shape) * random_strength
 
-            predicted_magnitudes = impulse
+        predicted_magnitudes = np.array(predicted_magnitudes).reshape(-1, window_size + 1)
 
-            if self.use_wavelets:
-                for seq in range(impulse.shape[0]):
-                    coeffs = pywt.array_to_coeffs(impulse[seq], dataset.coeff_slices)
-                    recon = (pywt.waverecn(coeffs, wavelet=self.wavelet))
-                    temp_audio = np.append(temp_audio, recon)
-            for j in range(sequence_length_max):
-                prediction = self.model.predict(impulse.reshape(shape))
-
-                # Wavelet audio
-                if self.use_wavelets:
-                    coeffs = pywt.array_to_coeffs(prediction[0], dataset.coeff_slices)
-                    recon = (pywt.waverecn(coeffs, wavelet=self.wavelet))
-                    temp_audio = np.append(temp_audio, recon)
-
-                if self.use_cnn:
-                    prediction = prediction.reshape(1, self.output_shapes[1], 1)
-
-                # print("prediction.shape", prediction.shape)
-                # prediction.shape (1, 1025)
-
-                ### add the last prediction to the predicted_magnitudes
-                predicted_magnitudes = np.vstack((predicted_magnitudes, prediction))
-                impulse = predicted_magnitudes[-self.sequence_length:]
-
-                # print("impulse.shape", impulse.shape)
-
-                if (np.random.random_sample() < random_chance):
-                    idx = np.random.randint(0, self.sequence_length)
-                    impulse[idx] = impulse[idx] + np.random.random_sample(impulse[idx].shape) * random_strength
-
-                done = int(float(i * sequence_length_max + j) / float(amount_samples * sequence_length_max) * 100.0) + 1
-                sys.stdout.write('{}% audio generation complete.   \r'.format(done))
-                sys.stdout.flush()
-
-            if self.use_wavelets:
-                audio += [temp_audio]
-            else:
-                predicted_magnitudes = np.array(predicted_magnitudes).reshape(-1, self.window_size + 1)
-                # print("predicted_magnitudes.shape", predicted_magnitudes.shape)
-                audio += [dataset.griffin_lim(predicted_magnitudes.T, griffin_iterations)]
-
-        audio = np.array(audio)
-        if TMP_SAVE_IMPULSES:
-            np.save("data/saved_impulses_"+str(len(impulses))+".npy", np.asarray(impulses))
-        return audio
-
+        return predicted_magnitudes
 
 # Example calls and outputs:
-#"""
+"""
 test_handler = ModelHandlerLSTM()
 test_handler.create_model()
 
@@ -231,26 +184,4 @@ print(model.targets)
 pretrained_path = "/media/vitek/Data/Vitek/Projects/2019_LONDON/music generation/saved_models/trained_model_last___dnb1_300ep_default.tfl"
 test_handler.model.load(pretrained_path)
 
-# Second part of the example ...
-from utils.audio_dataset_generator import AudioDatasetGenerator
-import librosa
-
-dataset = AudioDatasetGenerator(sequence_length=40)
-print("loading dataset from a wav file")
-audio_data_path = "/media/vitek/Data/Vitek/Projects/2019_LONDON/music generation/small_file/"
-#dataset.load(audio_data_path, force=True, prevent_shuffling=False)
-dataset.load(audio_data_path, force=True, prevent_shuffling=True)
-
-audio = test_handler.generate(dataset, amount_samples = 100) # oh pry thy wont fail on me
-
-print("audio generated, saving")
-print("audio", audio.shape)
-
-import scipy.io.wavfile
-
-for sample_i, sample in enumerate(audio):
-    sample_rate = 44100
-    librosa.output.write_wav('data/sample_i-'+str(sample_i)+'Trained300(librosa).wav', audio[sample_i], sample_rate)
-
-    scipy.io.wavfile.write('data/sample_i-'+str(sample_i)+'Trained300(Scipy).wav', sample_rate, audio[sample_i])
-
+"""

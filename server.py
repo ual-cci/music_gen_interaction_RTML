@@ -13,9 +13,19 @@ import server_handler
 
 # Thanks to the tutorial at: https://blog.keras.io/building-a-simple-keras-deep-learning-rest-api.html
 
+# Production vs development - not entirely sure what the differences are, except for debug outputs
+PRODUCTION = True # waitress - production-quality pure-Python WSGI server with very acceptable performance
+PRODUCTION = False # Flask
+
+SERVER_VERBOSE = 2  # 2 = all messages, 1 = only important ones, 0 = none!
+
+if PRODUCTION:
+    from waitress import serve
+
 app = flask.Flask(__name__)
 serverside_handler = None
 pool = ThreadPool()
+
 
 class Server(object):
     """
@@ -28,14 +38,19 @@ class Server(object):
         self.load_serverside_handler()
 
         frequency_sec = 10.0
-        t = Thread(target=self.mem_monitor_deamon, args=([frequency_sec]))
-        t.daemon = True
-        t.start()
+        if SERVER_VERBOSE > 0:
+            t = Thread(target=self.mem_monitor_deamon, args=([frequency_sec]))
+            t.daemon = True
+            t.start()
 
         # hack to distinguish server by hostnames
         hostname = socket.gethostname()  # gpu048.etcetcetc.edu
         print("server hostname is", hostname)
-        app.run()
+
+        if PRODUCTION:
+            serve(app, host='127.0.0.1', port=5000)
+        else:
+            app.run()
 
     def mem_monitor_deamon(self, frequency_sec):
         import subprocess
@@ -93,13 +108,26 @@ def get_audio():
     if flask.request.method == "POST":
         t_start_decode = timer()
 
-        if len(flask.request.files):
+        DEFAULT_lenght = 1024
+
+        if len(flask.request.files) and SERVER_VERBOSE > 1:
             print("Recieved flask.request.files = ",flask.request.files)
+
+        try:
+            requested_length = flask.request.files["requested_length"].read()
+            #print("received: ",requested_length)
+            requested_length = int(requested_length)
+
+        except Exception as e:
+            print("failed to read the requested_length", e)
+            requested_length = DEFAULT_lenght
+
+        print("Server will generate audio of requested length",requested_length,".")
 
         t_start_eval = timer()
 
         global serverside_handler
-        audio_arr = serverside_handler.generate_audio_sample()
+        audio_arr = serverside_handler.generate_audio_sample(requested_length)
         data["audio_response"] = audio_arr.tolist()
 
         t_end_eval = timer()
@@ -113,7 +141,8 @@ def get_audio():
     t_to_jsonify = timer()
     as_json = flask.jsonify(data)
     t_to_jsonify = timer() - t_to_jsonify
-    print("JSONify took", t_to_jsonify, "sec.")
+    if SERVER_VERBOSE > 1:
+        print("JSONify took", t_to_jsonify, "sec.")
 
     return as_json
 
