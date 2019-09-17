@@ -54,6 +54,12 @@ def recurrent_net(net, rec_type, rec_size, return_sequence):
 class ModelHandlerLSTM(object):
     """
     Will handle everything around the LSTM model.
+    Can create a new model architecture. It's model can be trained, loaded, used for generation/prediction.
+    (Shouldn't have any audio processing specific code though.)
+
+    - create a model
+    - predict
+
     """
 
     def __init__(self):
@@ -131,6 +137,7 @@ class ModelHandlerLSTM(object):
         self.wavelet = 'db10'
         self.window_size = 1024
 
+        TMP_SAVE_IMPULSES = True
 
         impulse_scale = 1.0
         griffin_iterations = 60
@@ -142,6 +149,7 @@ class ModelHandlerLSTM(object):
         shape = (1, dimension1, dimension2, 1) if self.use_cnn else (1, dimension1, dimension2)
 
         audio = []
+        impulses = []
 
         if self.use_wavelets:
             temp_audio = np.array(0)
@@ -149,6 +157,11 @@ class ModelHandlerLSTM(object):
 
             random_index = np.random.randint(0, (len(dataset.x_frames) - 1))
             impulse = np.array(dataset.x_frames[random_index]) * impulse_scale
+
+            ## TODO: save 100 random impulses (and test them if they work also...)
+            if TMP_SAVE_IMPULSES:
+                impulses.append(impulse)
+
             predicted_magnitudes = impulse
 
             if self.use_wavelets:
@@ -193,6 +206,8 @@ class ModelHandlerLSTM(object):
                 audio += [dataset.griffin_lim(predicted_magnitudes.T, griffin_iterations)]
 
         audio = np.array(audio)
+        if TMP_SAVE_IMPULSES:
+            np.save("data/saved_impulses_"+str(len(impulses))+".npy", np.asarray(impulses))
         return audio
 
 
@@ -212,7 +227,6 @@ print(model.targets)
 #Tensor("FullyConnected_1/BiasAdd:0", shape=(?, 1025), dtype=float32)
 #[<tf.Tensor 'input_data0/X:0' shape=(?, 40, 1025) dtype=float32>]
 #[<tf.Tensor 'TargetsData/Y:0' shape=(?, 1025) dtype=float32>]
-#"""
 
 pretrained_path = "/media/vitek/Data/Vitek/Projects/2019_LONDON/music generation/saved_models/trained_model_last___dnb1_300ep_default.tfl"
 test_handler.model.load(pretrained_path)
@@ -227,11 +241,16 @@ audio_data_path = "/media/vitek/Data/Vitek/Projects/2019_LONDON/music generation
 #dataset.load(audio_data_path, force=True, prevent_shuffling=False)
 dataset.load(audio_data_path, force=True, prevent_shuffling=True)
 
-audio = test_handler.generate(dataset, amount_samples = 2)
+audio = test_handler.generate(dataset, amount_samples = 100) # oh pry thy wont fail on me
 
 print("audio generated, saving")
 print("audio", audio.shape)
 
+import scipy.io.wavfile
+
 for sample_i, sample in enumerate(audio):
     sample_rate = 44100
-    librosa.output.write_wav('data/sample_i-'+str(sample_i)+'.wav', audio[sample_i], sample_rate)
+    librosa.output.write_wav('data/sample_i-'+str(sample_i)+'Trained300(librosa).wav', audio[sample_i], sample_rate)
+
+    scipy.io.wavfile.write('data/sample_i-'+str(sample_i)+'Trained300(Scipy).wav', sample_rate, audio[sample_i])
+
