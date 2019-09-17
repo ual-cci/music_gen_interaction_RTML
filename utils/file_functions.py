@@ -1,7 +1,7 @@
 # Saving and loading of files
 import numpy as np
 
-# compression of 0.2 for 15 files -
+# compression of 1.1MB for array of 100 samples ...
 
 def save_compressed(array, name_without_npz):
     np.savez_compressed(name_without_npz + ".npz", a=array)
@@ -11,10 +11,10 @@ def load_compressed(name_without_npz):
     return array
 
 """
-tmp = np.load("../data/saved_impulses_15.npy")
+tmp = np.load("../data/saved_impulses_100.npy")
 
-save_compressed(tmp, "../data/saved_impulses_15")
-tmp2 = load_compressed("../data/saved_impulses_15")
+save_compressed(tmp, "../data/saved_impulses_100")
+tmp2 = load_compressed("../data/saved_impulses_100")
 
 equal = np.array_equal(tmp, tmp2)
 print("Equal?", equal)
