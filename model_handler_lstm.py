@@ -88,7 +88,7 @@ class ModelHandlerLSTM(object):
         # auto init?
         #self.model = create_model()
 
-    def load_model(self, path = "/media/vitek/Data/Vitek/Projects/2019_LONDON/music generation/saved_models/trained_model_last___dnb1_300ep_default.tfl"):
+    def load_model(self, path):
         print("Loading a pretrained model")
         self.model.load(path)
 
