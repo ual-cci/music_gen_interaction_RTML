@@ -12,8 +12,8 @@ class AudioHandler(object):
 
     """
 
-    def __init__(self, fft_size=2048, window_size=1024, hop_size=512, sample_rate=44100):
-        self.griffin_iterations = 60
+    def __init__(self, griffin_iterations = 60, fft_size=2048, window_size=1024, hop_size=512, sample_rate=44100):
+        self.griffin_iterations = griffin_iterations
 
         self.fft_size = fft_size
         self.window_size = window_size

@@ -32,10 +32,10 @@ class Server(object):
     Server
     """
 
-    def __init__(self):
+    def __init__(self, args):
         print("Server ... starting server and loading model ... please wait until its started ...")
 
-        self.load_serverside_handler()
+        self.load_serverside_handler(args)
 
         frequency_sec = 10.0
         if SERVER_VERBOSE > 0:
@@ -63,9 +63,9 @@ class Server(object):
             print("Memory:", mem)
             time.sleep(frequency_sec)  # check every frequency_sec sec
 
-    def load_serverside_handler(self):
+    def load_serverside_handler(self, args):
         global serverside_handler
-        serverside_handler = server_handler.ServerHandler()
+        serverside_handler = server_handler.ServerHandler(args)
         print('Server handler loaded.')
 
 
@@ -165,4 +165,11 @@ def get_gpus_buses():
     return buses
 
 if __name__ == "__main__":
-    server = Server()
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Project: Real Time Audio Generation.')
+    parser.add_argument('-lstm_layers', help='number of LSTM layers the model should have', default='3')
+    parser.add_argument('-griffin_iterations', help='iterations to use in griffin reconstruction', default='60')
+    args = parser.parse_args()
+
+    server = Server(args)
