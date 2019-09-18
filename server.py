@@ -133,6 +133,10 @@ def get_audio():
         data["time_reconstruct"] = t_reconstruct
         data["time_decode"] = t_decode_end-t_decode_start
 
+
+        t_server_end = timer()
+        data["time_server_total"] = t_server_end-t_decode_start
+
         # indicate that the request was a success
         data["success"] = True
 
