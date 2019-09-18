@@ -51,7 +51,7 @@ for len_to_test in [32, 64, 128, 256, 512, 1024]:
             times_communication.append(t_communication)
 
         if k == 1:
-            print("     [L=", str(len_to_test).center(5), "] audio_response:", audio_response.shape, "time: ", t, "sec ..", end='', flush=True)
+            print("     [L=", str(len_to_test).center(5), "] audio_response:", audio_response.shape, "time: ", t_client_total, "sec ..", end='', flush=True)
         elif k>1:
             print(".", end='', flush=True)
 
