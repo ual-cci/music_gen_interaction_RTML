@@ -14,16 +14,22 @@ print("trying at ",Handshake_REST_API_URL)
 r = requests.post(Handshake_REST_API_URL, files=payload).json()
 print("Handshake request data", r)
 
+labels = []
+data = []
+
 # = GET AUDIO =================================================
+repetitions = 10 #10
 for len_to_test in [32, 64, 128, 256, 512, 1024]:
+    labels.append(len_to_test)
+
     times_total = []
     times_predict = []
     times_reconstruct = []
     times_communication = []
     print("[L=", len_to_test, "]")
 
-    #for k in tqdm(range(10)):
-    for k in range(10):
+    #for k in tqdm(range(repetitions)):
+    for k in range(repetitions):
         t_start_request = timer()
         Handshake_GETAUDIO_API_URL = "http://localhost:"+PORT+"/get_audio"
         payload = {"requested_length": str(len_to_test)}
@@ -58,11 +64,12 @@ for len_to_test in [32, 64, 128, 256, 512, 1024]:
     times_total = np.asarray(times_total)
     times_predict = np.asarray(times_predict)
     times_reconstruct = np.asarray(times_reconstruct)
+    times_communication = np.asarray(times_communication)
     seconds_playback = np.max([len(audio_response) / 44100])
 
     print()
     print("  ...[L=", str(len_to_test).center(5), "] time total:", np.mean(times_total).round(3), "+-", np.std(times_total).round(3), "sec. Predict=",np.mean(times_predict).round(3), "Reconstruct=",np.mean(times_reconstruct).round(3), "Communicate=",np.mean(times_communication).round(3), "   / Playback=",seconds_playback.round(3), "sec.")
-
+    data.append([times_predict, times_reconstruct, times_communication, times_total, seconds_playback])
 """
 [local potato pc stats]
 [L= 32 ]
@@ -120,5 +127,40 @@ for len_to_test in [32, 64, 128, 256, 512, 1024]:
      [L=  512  ] audio_response: (282112,) time:  13.079125667999506 sec ..........
   ...[L=  512  ] time total: 13.949 +- 0.928 sec. Predict= 8.634 Reconstruct= 2.405    / Playback= 6.397 sec.
 
+# Plotting:
+import matplotlib.pyplot as plt
 
-"""
+title = "GoogleCloud - K80 gpu, n1-standard-2 / Model with 3 lstms / Reconstruct griff. 60 it."
+#title = "GoogleCloud - K80 gpu, n1-standard-2 / Model with 2 lstms / Reconstruct griff. 30 it."
+
+data = np.asarray(data)
+times_predict = np.asarray([list(a) for a in data[:,0]])
+times_reconstruct = np.asarray([list(a) for a in data[:,1]])
+times_communication = np.asarray([list(a) for a in data[:,2]])
+times_total = np.asarray([list(a) for a in data[:,3]])
+seconds_playback = data[:,4]
+
+print("labels",labels)
+print("times_predict", times_predict)
+print("np.mean(times_predict,axis=1)", np.mean(times_predict,axis=1))
+print("seconds_playback", seconds_playback)
+
+x = np.arange(len(labels))  # the label locations
+width = 0.2  # the width of the bars
+
+fig, ax = plt.subplots()
+
+ax1 = ax.bar(x-1.5*width, np.mean(times_predict,axis=1), width, yerr=np.std(times_predict,axis=1), label='times_predict')
+ax2 = ax.bar(x-0.5*width, np.mean(times_reconstruct,axis=1), width, yerr=np.std(times_reconstruct,axis=1), label='times_reconstruct')
+ax3 = ax.bar(x+0.5*width, np.mean(times_communication,axis=1), width, yerr=np.std(times_communication,axis=1), label='times_communication')
+ax4 = ax.bar(x+1.5*width, np.mean(times_total,axis=1), width, yerr=np.std(times_predict,axis=1), label='times_total')
+print(x)
+
+ax.hlines(seconds_playback, xmin=x-0.4, xmax=x+0.4, colors='r', linestyles='dashed')
+ax.set_xticks(x)
+ax.set_ylabel('time (sec)')
+ax.set_title(title)
+ax.set_xticklabels(labels)
+ax.legend()
+
+plt.show()
