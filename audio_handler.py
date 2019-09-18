@@ -37,12 +37,18 @@ class AudioHandler(object):
         y = librosa.core.istft(stft_matrix, self.hop_size, self.window_size)
 
         if not np.isfinite(y).all():
-            print("Problem with the signal - it's not finite (contains inf or  NaN")
+            print("Problem with the signal - it's not finite (contains inf or NaN)")
             print("Signal = ", y)
             y = np.nan_to_num(y)
             print("Attempted hacky fix")
 
         for i in range(max_iter):
+            if not np.isfinite(y).all():
+                print("Problem with the signal - it's not finite (contains inf or NaN), in iteration",i)
+                print("Signal = ", y)
+                y = np.nan_to_num(y)
+                print("Attempted hacky fix inside the iterative method")
+
             stft_matrix = librosa.core.stft(y, self.fft_size, self.hop_size, self.window_size)
             stft_matrix = stftm_matrix * stft_matrix / np.abs(stft_matrix)
             y = librosa.core.istft(stft_matrix, self.hop_size, self.window_size)
