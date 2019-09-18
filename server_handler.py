@@ -2,6 +2,7 @@ import numpy as np
 import audio_handler
 import model_handler_lstm
 from utils import file_functions
+from timeit import default_timer as timer
 
 class ServerHandler(object):
     """
@@ -48,14 +49,21 @@ class ServerHandler(object):
         random_index = np.random.randint(0, (len(self.preloaded_impulses) - 1))
         impulse = np.array(self.preloaded_impulses[random_index]) * impulse_scale
 
+        t_predict_start = timer()
         predicted_spectrogram = self.model_handler.generate_sample(impulse, requested_length)
         print("predicted_spectrogram.shape", predicted_spectrogram.shape)
 
+        t_reconstruct_start = timer()
+
         audio = self.audio_handler.spectrogram2audio(predicted_spectrogram)
         print("audio.shape", audio.shape)
+        t_reconstruct_end = timer()
 
-        return audio
+        t_predict = t_reconstruct_start - t_predict_start
+        t_reconstruct = t_reconstruct_end - t_reconstruct_start
+
+        return audio, t_predict, t_reconstruct
 
         audio_arr = np.ones([requested_length, ])
 
-        return audio_arr
+        return audio_arr, 0, 0

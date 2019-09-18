@@ -106,7 +106,7 @@ def get_audio():
     # Evaluate data
     data = {"success": False}
     if flask.request.method == "POST":
-        t_start_decode = timer()
+        t_decode_start = timer()
 
         DEFAULT_lenght = 1024
 
@@ -124,16 +124,14 @@ def get_audio():
 
         print("Server will generate audio of requested length",requested_length,".")
 
-        t_start_eval = timer()
+        t_decode_end = timer()
 
         global serverside_handler
-        audio_arr = serverside_handler.generate_audio_sample(requested_length)
+        audio_arr, t_predict, t_reconstruct = serverside_handler.generate_audio_sample(requested_length)
         data["audio_response"] = audio_arr.tolist()
-
-        t_end_eval = timer()
-
-        data["time_pure_eval"] = t_end_eval-t_start_eval
-        data["time_pure_decode"] = t_start_eval-t_start_decode
+        data["time_predict"] = t_predict
+        data["time_reconstruct"] = t_reconstruct
+        data["time_decode"] = t_decode_end-t_decode_start
 
         # indicate that the request was a success
         data["success"] = True
