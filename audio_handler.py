@@ -23,12 +23,25 @@ class AudioHandler(object):
     def spectrogram2audio(self, spectrogram):
         audio = self.griffin_lim(spectrogram.T, self.griffin_iterations)
         audio = np.array(audio)
+
+        # sometimes gets error:
+        #     if not np.isfinite(y).all():
+        #         raise ParameterError('Audio buffer is not finite everywhere')
+        # isfinite() -> Test element-wise for finiteness (not infinity or not Not a Number).
+
         return audio
 
     def griffin_lim(self, stftm_matrix, max_iter=100):
         """"Iterative method to 'build' phases for magnitudes."""
         stft_matrix = np.random.random(stftm_matrix.shape)
         y = librosa.core.istft(stft_matrix, self.hop_size, self.window_size)
+
+        if not np.isfinite(y).all():
+            print("Problem with the signal - it's not finite (contains inf or  NaN")
+            print("Signal = ", y)
+            y = np.nan_to_num(y)
+            print("Attempted hacky fix")
+
         for i in range(max_iter):
             stft_matrix = librosa.core.stft(y, self.fft_size, self.hop_size, self.window_size)
             stft_matrix = stftm_matrix * stft_matrix / np.abs(stft_matrix)
