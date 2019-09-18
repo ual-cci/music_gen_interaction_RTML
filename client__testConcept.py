@@ -112,20 +112,32 @@ for len_to_test in [32, 64, 128, 256, 512, 1024]:
 
 """ [K80 GPU test & DL image tf 1.14.0 m35, mkl] n1-standard-2 (2 vCPUs, 7.5 GB memory), with 1 K80 GPU
 [L= 32 ]
-     [L=   32  ] audio_response: (36352,) time:  1.7745753650001461 sec ..........
-  ...[L=   32  ] time total: 2.42 +- 1.4 sec. Predict= 0.599 Reconstruct= 0.369    / Playback= 0.824 sec.
+     [L=   32  ] audio_response: (36352,) time:  1.9282291459994667 sec ..........
+  ...[L=   32  ] time total: 1.891 +- 0.167 sec. Predict= 0.576 Reconstruct= 0.374 Communicate= 0.939    / Playback= 0.824 sec.
 [L= 64 ]
-     [L=   64  ] audio_response: (52736,) time:  2.741011834999881 sec ..........
-  ...[L=   64  ] time total: 2.583 +- 0.152 sec. Predict= 1.044 Reconstruct= 0.513    / Playback= 1.196 sec.
+     [L=   64  ] audio_response: (52736,) time:  2.628898408999703 sec ..........
+  ...[L=   64  ] time total: 2.588 +- 0.111 sec. Predict= 1.1 Reconstruct= 0.518 Communicate= 0.968    / Playback= 1.196 sec.
 [L= 128 ]
-     [L=  128  ] audio_response: (85504,) time:  4.072331190000114 sec ..........
-  ...[L=  128  ] time total: 4.06 +- 0.158 sec. Predict= 2.107 Reconstruct= 0.778    / Playback= 1.939 sec.
+     [L=  128  ] audio_response: (85504,) time:  3.8227550159999737 sec ..........
+  ...[L=  128  ] time total: 4.001 +- 0.157 sec. Predict= 2.119 Reconstruct= 0.786 Communicate= 1.093    / Playback= 1.939 sec.
 [L= 256 ]
-     [L=  256  ] audio_response: (151040,) time:  6.945374451999669 sec ..........
-  ...[L=  256  ] time total: 7.253 +- 0.319 sec. Predict= 4.344 Reconstruct= 1.328    / Playback= 3.425 sec.
+     [L=  256  ] audio_response: (151040,) time:  6.825211506000414 sec ..........
+  ...[L=  256  ] time total: 7.049 +- 0.18 sec. Predict= 4.294 Reconstruct= 1.323 Communicate= 1.426    / Playback= 3.425 sec.
 [L= 512 ]
-     [L=  512  ] audio_response: (282112,) time:  13.079125667999506 sec ..........
-  ...[L=  512  ] time total: 13.949 +- 0.928 sec. Predict= 8.634 Reconstruct= 2.405    / Playback= 6.397 sec.
+     [L=  512  ] audio_response: (282112,) time:  14.06817415200021 sec ..........
+  ...[L=  512  ] time total: 13.71 +- 0.466 sec. Predict= 8.804 Reconstruct= 2.436 Communicate= 2.461    / Playback= 6.397 sec.
+[L= 1024 ]
+     [L=  1024 ] audio_response: (544256,) time:  26.03507128399997 sec ..........
+  ...[L=  1024 ] time total: 26.038 +- 0.779 sec. Predict= 17.901 Reconstruct= 4.874 Communicate= 3.247    / Playback= 12.341 sec.
+"""
+
+
+""" [K80 GPU test & DL image tf 1.14.0 m35, mkl] n1-standard-2 (2 vCPUs, 7.5 GB memory), with 1 K80 GPU
+>> python3 server.py -lstm_layers 2 -griffin_iterations 30
+
+
+"""
+
 
 # Plotting:
 import matplotlib.pyplot as plt
