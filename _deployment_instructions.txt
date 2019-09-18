@@ -1,0 +1,52 @@
+[CLIENT SIDE]
+
+# Install ssh tunnel prereq.
+
+following - https://cloud.google.com/sdk/docs/downloads-apt-get
+
+gcloud init
+# and login ...
+# (this also btw works) gcloud beta compute --project "serverside-model-inference" ssh --zone "us-central1-a" "instance-1"
+
+#SSH tunnel on a local port 2222 to a GCE instance on its SSH port 5000:
+gcloud compute ssh instance-1 \
+    --project serverside-model-inference \
+    --zone us-central1-a \
+    -- -L 2222:localhost:5000
+
+[SERVER SIDE]
+- get:
+    trained_model_last___dnb1_300ep_default.tfl (26MB)
+    data/saved_impulses_15.npz (15 - 2MB,100 - 15MB)
+
+# Installation and running on Google Cloud VM
+
+1A.) create a VM instance (with "Allow HTTP traffic" for Flask) from scratch
+
+sudo apt-get install git
+sudo apt-get -y install python3-pip
+sudo apt update && sudo apt install -y libsm6 libxext6
+sudo apt-get install libxrender1
+sudo apt-get install libsndfile1
+sudo apt-get install htop
+
+git clone https://github.com/previtus/music_gen_interaction_RTML.git
+cd music_gen_interaction_RTML/
+pip3 install Pillow, numpy, librosa, opencv-python, pywt
+pip3 install -U Flask
+
+# this was a CPU VM in this case ...
+pip3 install --upgrade tensorflow
+pip3 install tflearn
+
+python3 server.py
+
+1B.) create VM instance from existing DL disk
+- 30GB "Deep Learning Image: TensorFlow 1.14.0 m35" < test this one with optimized mkl
+
+git clone https://github.com/previtus/music_gen_interaction_RTML.git
+cd music_gen_interaction_RTML/
+
+pip3 install librosa, tflearn
+sudo apt-get install libsndfile1
+python3 server.py
