@@ -135,7 +135,9 @@ def get_audio():
 
 
         t_server_end = timer()
-        data["time_server_total"] = t_server_end-t_decode_start
+        time_server_total = t_server_end - t_decode_start
+        print("time server total =",time_server_total)
+        data["time_server_total"] = time_server_total
 
         # indicate that the request was a success
         data["success"] = True
