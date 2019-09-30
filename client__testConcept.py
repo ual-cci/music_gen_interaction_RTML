@@ -141,6 +141,7 @@ for len_to_test in [32, 64, 128, 256, 512, 1024]:
 
 # Plotting:
 import matplotlib.pyplot as plt
+from slugify import slugify
 
 title = "GoogleCloud - K80 gpu, n1-standard-2 / Model with 3 lstms / Reconstruct griff. 60 it."
 #title = "GoogleCloud - K80 gpu, n1-standard-2 / Model with 2 lstms / Reconstruct griff. 30 it."
@@ -175,4 +176,10 @@ ax.set_title(title)
 ax.set_xticklabels(labels)
 ax.legend()
 
+
+filename = slugify(title)
+plt.savefig("plots/"+filename+".png", dpi=200)
+#plt.savefig("plots/"+filename+".pdf", dpi=200)
+
 plt.show()
+plt.close()
