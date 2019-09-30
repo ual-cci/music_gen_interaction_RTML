@@ -169,7 +169,9 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Project: Real Time Audio Generation.')
     parser.add_argument('-lstm_layers', help='number of LSTM layers the model should have', default='3')
+    parser.add_argument('-lstm_units', help='number of units in each LSTM layer', default='128')
     parser.add_argument('-griffin_iterations', help='iterations to use in griffin reconstruction', default='60')
+    parser.add_argument('-sample_rate', help='sample_rate', default='44100')
     args = parser.parse_args()
 
     server = Server(args)

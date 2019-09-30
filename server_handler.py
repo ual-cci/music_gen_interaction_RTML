@@ -16,12 +16,15 @@ class ServerHandler(object):
     """
 
     def __init__(self, args):
-        print("Server settings: args.lstm_layers=", args.lstm_layers,", args.griffin_iterations=", args.griffin_iterations)
+        print("Server settings: args.lstm_layers=", args.lstm_layers, ", args.lstm_units=", args.lstm_units,
+              ", args.griffin_iterations=", args.griffin_iterations, ", args.sample_rate=", args.sample_rate)
         lstm_layers = int(args.lstm_layers)
+        lstm_units = int(args.lstm_units)
         griffin_iterations = int(args.griffin_iterations)
+        sample_rate = int(args.sample_rate)
 
-        self.audio_handler = audio_handler.AudioHandler(griffin_iterations)
-        self.model_handler = model_handler_lstm.ModelHandlerLSTM(lstm_layers)
+        self.audio_handler = audio_handler.AudioHandler(griffin_iterations=griffin_iterations, sample_rate=sample_rate)
+        self.model_handler = model_handler_lstm.ModelHandlerLSTM(lstm_layers, lstm_units)
 
         # Create a model
         self.model_handler.create_model()

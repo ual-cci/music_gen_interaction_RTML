@@ -62,7 +62,7 @@ class ModelHandlerLSTM(object):
 
     """
 
-    def __init__(self, number_rnn_layers):
+    def __init__(self, number_rnn_layers, rnn_number_units):
         self.model = None
 
         # General Network
@@ -78,7 +78,7 @@ class ModelHandlerLSTM(object):
         # Recurrent Neural Network
         self.rnn_type = "lstm"
         self.number_rnn_layers = number_rnn_layers
-        self.rnn_number_units = 128
+        self.rnn_number_units = rnn_number_units
 
         # Convolutional Neural Network
         self.use_cnn = False
