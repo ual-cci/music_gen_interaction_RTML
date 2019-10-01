@@ -6,7 +6,7 @@ from tqdm import tqdm
 
 # = HANDSHAKE =================================================
 PORT = "5000"
-PORT = "2222"
+#PORT = "2222"
 Handshake_REST_API_URL = "http://localhost:"+PORT+"/handshake"
 
 payload = {"client": "client", "backup_name":"Bob"}
@@ -17,9 +17,21 @@ print("Handshake request data", r)
 labels = []
 data = []
 
-# = GET AUDIO =================================================
+
+title = "Local slow potato / Model with 3 lstms / Reconstruct griff. 60 it."
+title = "[TMP halfrate] Local slow potato / Model with 3 lstms / Reconstruct griff. 60 it."
+#title = "GoogleCloud - K80 gpu, n1-standard-2 / Model with 3 lstms / Reconstruct griff. 60 it."
+#title = "GoogleCloud - K80 gpu, n1-standard-2 / Model with 2 lstms / Reconstruct griff. 30 it."
+sample_rate = 44100
+sample_rate = 22050
+
+
 repetitions = 10 #10
-for len_to_test in [32, 64, 128, 256, 512, 1024]:
+sequence_to_try = [4, 8, 10, 16, 32]
+sequence_to_try = [32, 64, 128, 256, 512, 1024]
+
+# = GET AUDIO =================================================
+for len_to_test in sequence_to_try:
     labels.append(len_to_test)
 
     times_total = []
@@ -65,7 +77,7 @@ for len_to_test in [32, 64, 128, 256, 512, 1024]:
     times_predict = np.asarray(times_predict)
     times_reconstruct = np.asarray(times_reconstruct)
     times_communication = np.asarray(times_communication)
-    seconds_playback = np.max([len(audio_response) / 44100])
+    seconds_playback = np.max([len(audio_response) / sample_rate])
 
     print()
     print("  ...[L=", str(len_to_test).center(5), "] time total:", np.mean(times_total).round(3), "+-", np.std(times_total).round(3), "sec. Predict=",np.mean(times_predict).round(3), "Reconstruct=",np.mean(times_reconstruct).round(3), "Communicate=",np.mean(times_communication).round(3), "   / Playback=",seconds_playback.round(3), "sec.")
@@ -143,8 +155,6 @@ for len_to_test in [32, 64, 128, 256, 512, 1024]:
 import matplotlib.pyplot as plt
 from slugify import slugify
 
-title = "GoogleCloud - K80 gpu, n1-standard-2 / Model with 3 lstms / Reconstruct griff. 60 it."
-#title = "GoogleCloud - K80 gpu, n1-standard-2 / Model with 2 lstms / Reconstruct griff. 30 it."
 
 data = np.asarray(data)
 times_predict = np.asarray([list(a) for a in data[:,0]])

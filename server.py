@@ -174,4 +174,6 @@ if __name__ == "__main__":
     parser.add_argument('-sample_rate', help='sample_rate', default='44100')
     args = parser.parse_args()
 
+    args.sample_rate = '22050'
+
     server = Server(args)
