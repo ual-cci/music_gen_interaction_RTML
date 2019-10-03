@@ -11,7 +11,8 @@ try:
 except ImportError:
     import Queue as queue  # Python 2.x
 
-VERBOSE_audio_client = False
+DEBUG_simulate_slowdown = False
+VERBOSE_audio_client = True
 VERBOSE_messaging_client = False
 
 def print_error(*args):
@@ -86,21 +87,30 @@ class ClientMusic(object):
 
         k = 0
         while True:
-            k += 1
 
-            # with k == 219 this was the end of the sample
-            if k > 215:
-                #print("restarting k")
-                k=0 #hax
-            #buf = get_audio_FROMFILE(k)
+            batch_size = 40
+            batch_arr = []
+            for batch_i in range(batch_size):
 
-            #buf = get_audio()
-            buf = get_audio_HandlerOnly()
+                k += 1
+                if k > 215:  # with k == 219 this was the end of the sample
+                    k = 0  # hax
+                #buf = get_audio_FROMFILE(k)
+
+                buf = get_audio()
+                #buf = get_audio_HandlerOnly()
+
+                batch_arr.append(buf)
+
+
+            if DEBUG_simulate_slowdown:
+                time.sleep(0.1) # < what if it takes long time??? => Then it's choppy!
 
             if VERBOSE_audio_client:
-                print("got batch of ", len(buf))
+                print("got batch of ", len(batch_arr), "times", len(batch_arr[0]))
 
-            qin.put(buf)
+            for batch_buf in batch_arr:
+                qin.put(batch_buf)
 
 try:
     # Initialise jackd client
