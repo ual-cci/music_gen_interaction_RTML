@@ -30,7 +30,8 @@ class ServerHandler(object):
         self.model_handler.create_model()
         print("Created model:", self.model_handler.model)
 
-        model_path = "/media/vitek/Data/Vitek/Projects/2019_LONDON/music generation/saved_models/trained_model_last___dnb1_300ep_default.tfl"
+        #model_path = "/media/vitek/Data/Vitek/Projects/2019_LONDON/music generation/saved_models/trained_model_last___dnb1_300ep_default.tfl"
+        model_path = "/media/vitek/Data/Vitek/Projects/2019_LONDON/music generation/saved_models/trained_model_last___dnb1_300ep__halfHz_twiceWindowS.tfl"
         if file_functions.file_exists(model_path+".data-00000-of-00001"):
             self.model_handler.load_model(model_path)
         else:
@@ -49,11 +50,19 @@ class ServerHandler(object):
         print("Preloaded", len(self.preloaded_impulses), "impulse samples.")
 
     def generate_audio_sample(self, requested_length):
+        #audio_chunk = np.random.rand(36352, )
+        #return audio_chunk, 0, 0
 
         impulse_scale = 1.0
 
-        random_index = np.random.randint(0, (len(self.preloaded_impulses) - 1))
-        impulse = np.array(self.preloaded_impulses[random_index]) * impulse_scale
+        # seed it with an old sample
+        #random_index = np.random.randint(0, (len(self.preloaded_impulses) - 1))
+        random_index = 0
+        impulse = np.array(self.preloaded_impulses[random_index]) * impulse_scale # shape = (40, 1025)
+
+        # seed it from random
+        #impulse = np.random.rand(40, 1025)
+        #print(impulse.shape)
 
         t_predict_start = timer()
         predicted_spectrogram = self.model_handler.generate_sample(impulse, requested_length)
@@ -70,6 +79,3 @@ class ServerHandler(object):
 
         return audio, t_predict, t_reconstruct
 
-        audio_arr = np.ones([requested_length, ])
-
-        return audio_arr, 0, 0
