@@ -1,3 +1,4 @@
+# inspiration from https://github.com/spatialaudio/jackclient-python/issues/59
 # 1.) play a sound into output
 
 import numpy as np

@@ -1,3 +1,5 @@
+# inspiration from https://github.com/spatialaudio/jackclient-python/issues/59
+
 from __future__ import division, print_function
 import time
 import jack
