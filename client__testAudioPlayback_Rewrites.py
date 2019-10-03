@@ -11,7 +11,8 @@ try:
 except ImportError:
     import Queue as queue  # Python 2.x
 
-DEBUG_simulate_slowdown = False
+DEBUG_simulate_slowdown_pre = True
+DEBUG_simulate_slowdown_post = False
 VERBOSE_audio_client = True
 VERBOSE_messaging_client = False
 
@@ -34,15 +35,13 @@ def stop_callback(msg=''):
         port.get_array().fill(0)
     event.set()
 
-audio = np.load("data/saved_audio.npy")
-
-def get_audio_FROMFILE(k=0, lenght = 1024):
-    t_k = k % len(audio)
+def get_audio_FROMFILE(audio, k=0, lenght = 1024):
+    t_k = k # % len(audio)
     sample = np.asarray(audio[t_k * lenght:(t_k + 1) * lenght])
     #print(sample.shape)
     return sample # (1024,)
 
-def get_audio(lenght = 1024):
+def get_audio(blocksize = 1024):
     data = np.random.rand(blocksize, )
     return data # (1024,)
 
@@ -68,7 +67,8 @@ def process(frames):
 
 # Use queues to pass data to/from the audio backend
 queuesize = 4000
-blocksize = 1024
+blocksize = 1024 # 256, 512 and 1024 are alright
+#blocksize = 512
 
 qout = queue.Queue(maxsize=queuesize)
 qin = queue.Queue(maxsize=queuesize)
@@ -84,26 +84,30 @@ class ClientMusic(object):
 
 
     def requesting_audio(self):
+        #audio = np.load("data/saved_audio.npy")
+        audio = np.load("data/saved_audio_better.npy")
 
         k = 0
         while True:
+            if DEBUG_simulate_slowdown_pre:
+                time.sleep(3.1) # < what if it takes long time??? => Then it's choppy!
 
-            batch_size = 40
+            batch_size = 100
             batch_arr = []
             for batch_i in range(batch_size):
 
                 k += 1
                 if k > 215:  # with k == 219 this was the end of the sample
                     k = 0  # hax
-                #buf = get_audio_FROMFILE(k)
+                buf = get_audio_FROMFILE(audio, k)
 
-                buf = get_audio()
+                #buf = get_audio(blocksize)
                 #buf = get_audio_HandlerOnly()
 
                 batch_arr.append(buf)
 
 
-            if DEBUG_simulate_slowdown:
+            if DEBUG_simulate_slowdown_post:
                 time.sleep(0.1) # < what if it takes long time??? => Then it's choppy!
 
             if VERBOSE_audio_client:
