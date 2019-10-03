@@ -64,7 +64,7 @@ for k in range(1):
 # 2.) load processed sound (in the same way as we will generate sounds)
 # we started with spectrograms
 DEMO_LOAD_FROM_SPECTROGRAMS = True
-DEMO_MAKE_FROM_WAV_FILE = True
+DEMO_MAKE_FROM_WAV_FILE = False
 
 
 if DEMO_LOAD_FROM_SPECTROGRAMS:

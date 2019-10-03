@@ -221,7 +221,7 @@ class AudioDatasetGenerator:
 
 
 
-    def _generate_data__testReconstr(self, data_path):
+    def generate_data__testReconstr(self, data_path):
         ## This is to showcase that even this simple and immediate reconstruction brings large loss in quality!
 
 

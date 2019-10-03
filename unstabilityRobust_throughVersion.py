@@ -78,11 +78,13 @@ def get_audio(lenght = 40):
         print(k)
         data = np.ones(blocksize, )
         data = np.random.rand(blocksize, )
-        qin.put(data)
+        #qin.put(data)
 
 
         ### I suspect this only gives a handler ...
-        #datain=client.inports[0].get_array()
+        datain=client.inports[0].get_array()
+        qin.put(datain)
+
         #buf[k,:] = np.asarray(datain)
         #buf.append(np.asarray(datain))
     #time.sleep(1)
@@ -132,8 +134,8 @@ class ClientMusic(object):
         k = 0
         while True:
             k += 1
-            #buf = get_audio()
-            buf = get_audio_FROMFILE(k)
+            buf = get_audio()
+            #buf = get_audio_FROMFILE(k)
             if VERBOSE_audio_client:
                 print("got batch of ", len(buf))
             for sample in buf:
