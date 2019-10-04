@@ -15,11 +15,13 @@ except ImportError:
 from threading import Thread
 from timeit import default_timer as timer
 import requests
+from oscpy.server import OSCThreadServer
+from time import sleep
 
 DEBUG_simulate_slowdown_pre = False
 DEBUG_simulate_slowdown_post = False
 VERBOSE_audio_client = True
-VERBOSE_messaging_client = False
+VERBOSE_queues_status = False
 
 def print_error(*args):
     print(*args, file=sys.stderr)
@@ -68,7 +70,8 @@ def get_audio_chunk_from_server_HAX():
 
 def process(frames):
     previous = np.zeros(blocksize, )
-    print("qout", qout.qsize(), "/", queuesize)
+    if VERBOSE_queues_status:
+        print("qout", qout.qsize(), "/", queuesize)
 
     if qout.empty():
         print("empty, waiting with nothing!")
@@ -91,6 +94,14 @@ qout = queue.Queue(maxsize=queuesize)
 qin = queue.Queue(maxsize=queuesize)
 event = Event()
 
+OSC_address = '0.0.0.0'
+OSC_port = 8000
+OSC_bind = b'/send_i'
+
+# global SIGNAL_interactive_i
+SIGNAL_interactive_i = 0.0
+
+
 class ClientMusic(object):
     PORT = "5000"
     Handshake_REST_API_URL = "http://localhost:" + PORT + "/handshake"
@@ -111,7 +122,7 @@ class ClientMusic(object):
 
     def audio_from_server(self, requested_lenght):
         t_start_request = timer()
-        payload = {"requested_length": str(requested_lenght)}
+        payload = {"requested_length": str(requested_lenght), "interactive_i": str(SIGNAL_interactive_i)}
         r = requests.post(self.Handshake_GETAUDIO_API_URL, files=payload).json()
         #print("Get audio request data", r)
 
@@ -218,6 +229,7 @@ try:
     samplerate = client.samplerate
     print("samplerate", samplerate)
 
+    # JACKD
     #client.set_xrun_callback(xrun)
     client.set_shutdown_callback(shutdown)
     client.set_process_callback(process)
@@ -231,6 +243,20 @@ try:
 
     timeout = blocksize / samplerate
     print("Processing input in %d ms frames" % (int(round(1000 * timeout))))
+
+    # OSC - Interactive listener
+
+    def callback(*values):
+        global SIGNAL_interactive_i
+        print("OSC got values: {}".format(values))
+        SIGNAL_interactive_i = float(values[0])/1000.0 # 1000 = 100% = 1.0
+
+    print("Also starting a OSC listener at ",OSC_address,OSC_port,OSC_bind, "to listen for interactive signal (0-1000).")
+    osc = OSCThreadServer()
+    sock = osc.listen(address=OSC_address, port=OSC_port, default=True)
+    osc.bind(OSC_bind, callback)
+    #sleep(1000)
+    # at the end?
 
     # Pre-fill queues
     data = np.zeros((blocksize,), dtype='float32')
@@ -253,6 +279,8 @@ try:
         while True:
             data = qin.get()
             qout.put(data)
+
+    osc.stop()
 
 except (queue.Full):
     raise RuntimeError('Queue full')

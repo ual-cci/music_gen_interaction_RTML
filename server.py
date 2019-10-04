@@ -115,8 +115,11 @@ def get_audio():
 
         try:
             requested_length = flask.request.files["requested_length"].read()
-            #print("received: ",requested_length)
+            interactive_i = flask.request.files["interactive_i"].read()
+            print("received: ",requested_length, interactive_i)
+
             requested_length = int(requested_length)
+            interactive_i = float(interactive_i)
 
         except Exception as e:
             print("failed to read the requested_length", e)
