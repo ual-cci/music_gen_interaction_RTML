@@ -32,6 +32,7 @@ class ServerHandler(object):
 
         #model_path = "/media/vitek/Data/Vitek/Projects/2019_LONDON/music generation/saved_models/trained_model_last___dnb1_300ep_default.tfl"
         model_path = "/media/vitek/Data/Vitek/Projects/2019_LONDON/music generation/saved_models/trained_model_last___dnb1_300ep__halfHz_twiceWindowS.tfl"
+        #model_path = "saved_models/trained_model_last___dnb1_300ep__halfHz_twiceWindowS.tfl"
         if file_functions.file_exists(model_path+".data-00000-of-00001"):
             self.model_handler.load_model(model_path)
         else:
@@ -40,7 +41,7 @@ class ServerHandler(object):
         # Load impulse samples
         self.preloaded_impulses = []
 
-        impulses_to_load_path = "data/saved_impulses_15" # or 100
+        impulses_to_load_path = "data/saved_impulses_100" # or 100
         if file_functions.file_exists(impulses_to_load_path+".npz"):
             self.preloaded_impulses = file_functions.load_compressed(impulses_to_load_path)
         else:
@@ -74,7 +75,18 @@ class ServerHandler(object):
 
         t_reconstruct_start = timer()
 
+        print("Requested versus from impulse seed: requested_length=",requested_length,"seed=",self.model_handler.sequence_length)
+        perc = float(requested_length) / (float(self.model_handler.sequence_length) + float(requested_length))
+        print("Percentage = ",perc, "(only this is new)")
+
         audio = self.audio_handler.spectrogram2audio(predicted_spectrogram)
+
+        # Return only the generated audio?
+        """ # THE REMAINING AUDIO IS NOT LONG ENOUGH TO BE REAL TIME
+        perc_idx = int((len(audio) - 1) * (1.0-perc))
+        audio = audio[perc_idx:]
+        """
+
         print("audio.shape", audio.shape)
         t_reconstruct_end = timer()
 

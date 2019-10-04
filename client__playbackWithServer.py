@@ -86,7 +86,7 @@ def process(frames):
         client.outports[0].get_array()[:] = data
 
 # Use queues to pass data to/from the audio backend
-queuesize = 4000
+queuesize = 1000
 blocksize = 1024 # 256, 512 and 1024 are alright
 #blocksize = 512
 
@@ -157,13 +157,18 @@ class ClientMusic(object):
             # qin is being cleaned all the time...
             print("qin", qin.qsize(), "/", queuesize)
             # if qout is almost full, just wait ... !
-
+            # or just wait when you have something to play
+            while qout.qsize() > 100:
+                time.sleep(0.05)
 
             if DEBUG_simulate_slowdown_pre:
                 time.sleep(3.1) # < what if it takes long time??? => Then it's choppy!
 
             #audio_response = get_audio_chunk_from_server_HAX()
             requested_lenght = 4
+            #requested_lenght = 128
+            requested_lenght = 128
+            #requested_lenght = 64
             #requested_lenght = 1024 # i expect delay, but then it playing smoothly for a bit, RIGHT?
             #requested_lenght = 8
             audio_response = self.audio_from_server(requested_lenght)
