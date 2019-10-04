@@ -3,6 +3,8 @@ from timeit import default_timer as timer
 import numpy as np
 import scipy.misc
 from tqdm import tqdm
+import matplotlib.pyplot as plt
+from slugify import slugify
 
 # = HANDSHAKE =================================================
 PORT = "5000"
@@ -152,8 +154,6 @@ for len_to_test in sequence_to_try:
 
 
 # Plotting:
-import matplotlib.pyplot as plt
-from slugify import slugify
 
 
 data = np.asarray(data)
