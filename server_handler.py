@@ -49,7 +49,7 @@ class ServerHandler(object):
 
         print("Preloaded", len(self.preloaded_impulses), "impulse samples.")
 
-    def generate_audio_sample(self, requested_length):
+    def generate_audio_sample(self, requested_length, interactive_i=0.0):
         #audio_chunk = np.random.rand(36352, )
         #return audio_chunk, 0, 0
 
@@ -57,7 +57,11 @@ class ServerHandler(object):
 
         # seed it with an old sample
         #random_index = np.random.randint(0, (len(self.preloaded_impulses) - 1))
+
         random_index = 0
+        # float interactive_i to int 0 - len(self.preloaded_impulses)
+        random_index = int((len(self.preloaded_impulses) - 1) * interactive_i)
+        print("random_index selected as",random_index,"from interactive_i=",interactive_i)
         impulse = np.array(self.preloaded_impulses[random_index]) * impulse_scale # shape = (40, 1025)
 
         # seed it from random

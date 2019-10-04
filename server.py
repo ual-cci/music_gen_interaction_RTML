@@ -109,6 +109,7 @@ def get_audio():
         t_decode_start = timer()
 
         DEFAULT_lenght = 1024
+        DEFAULT_interactive_i = 0.0
 
         if len(flask.request.files) and SERVER_VERBOSE > 1:
             print("Recieved flask.request.files = ",flask.request.files)
@@ -124,13 +125,14 @@ def get_audio():
         except Exception as e:
             print("failed to read the requested_length", e)
             requested_length = DEFAULT_lenght
+            interactive_i = DEFAULT_interactive_i
 
-        print("Server will generate audio of requested length",requested_length,".")
+        print("Server will generate audio of requested length",requested_length,". Interactive i=",interactive_i)
 
         t_decode_end = timer()
 
         global serverside_handler
-        audio_arr, t_predict, t_reconstruct = serverside_handler.generate_audio_sample(requested_length)
+        audio_arr, t_predict, t_reconstruct = serverside_handler.generate_audio_sample(requested_length, interactive_i)
         data["audio_response"] = audio_arr.tolist()
         data["time_predict"] = t_predict
         data["time_reconstruct"] = t_reconstruct
