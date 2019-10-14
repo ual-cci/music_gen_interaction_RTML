@@ -17,6 +17,8 @@ from timeit import default_timer as timer
 import requests
 from oscpy.server import OSCThreadServer
 from time import sleep
+import librosa
+from scipy import signal
 
 DEBUG_simulate_slowdown_pre = False
 DEBUG_simulate_slowdown_post = False
@@ -94,14 +96,18 @@ qout = queue.Queue(maxsize=queuesize)
 qin = queue.Queue(maxsize=queuesize)
 event = Event()
 
+CLIENT_sample_rate = 22050
+
 OSC_address = '0.0.0.0'
 OSC_port = 8000
 OSC_bind = b'/send_i'
 
 # global SIGNAL_interactive_i
 SIGNAL_interactive_i = 0.0
-SIGNAL_model_i = 2 #< if i want it to start with it, hardcode it here for now
+SIGNAL_model_i = 0 #< if i want it to start with it, hardcode it here for now
 SIGNAL_song_i = 0
+
+SIGNAL_requested_lenght = 128
 
 class ClientMusic(object):
     PORT = "5000"
@@ -164,20 +170,21 @@ class ClientMusic(object):
             print("qin", qin.qsize(), "/", queuesize)
             # if qout is almost full, just wait ... !
             # or just wait when you have something to play
-            while qout.qsize() > 100:
+            global SIGNAL_requested_lenght
+
+            while qout.qsize() > SIGNAL_requested_lenght: # maybe use that?
                 time.sleep(0.05)
 
             if DEBUG_simulate_slowdown_pre:
                 time.sleep(3.1) # < what if it takes long time??? => Then it's choppy!
 
-            #audio_response = get_audio_chunk_from_server_HAX()
-            requested_lenght = 4
-            #requested_lenght = 128
-            requested_lenght = 128
-            #requested_lenght = 64
-            requested_lenght = 1024 # i expect delay, but then it playing smoothly for a bit, RIGHT?
-            requested_lenght = 4
-            audio_response = self.audio_from_server(requested_lenght)
+            audio_response = self.audio_from_server(SIGNAL_requested_lenght)
+
+            # Resample:
+            #audio_response = librosa.resample(audio_response, 22050, 48000)
+            #print(audio_response.shape)
+            audio_response = signal.resample(audio_response, len(audio_response)*2) # 22050 of model * 2
+            #print(audio_response.shape)
 
             name = "_"+str(t).zfill(3)
             #save_audio_debug(name, audio_response, self.sample_rate)
@@ -237,8 +244,10 @@ try:
     client.blocksize = blocksize
     print("blocksize", blocksize)
 
+    # I can start it with 44100 or 48000 but not 22050 (!) ... make it resample (aka samling rate conversion)?
     samplerate = client.samplerate
-    print("samplerate", samplerate)
+    print("samplerate", samplerate, "we want", CLIENT_sample_rate)
+    #assert (int(samplerate)) == CLIENT_sample_rate
 
     # JACKD
     #client.set_xrun_callback(xrun)
@@ -261,13 +270,15 @@ try:
         global SIGNAL_interactive_i
         global SIGNAL_model_i
         global SIGNAL_song_i
+        global SIGNAL_requested_lenght
         print("OSC got values: {}".format(values))
         # [percentage, model_i, song_i]
-        percentage, model_i, song_i = values
+        percentage, model_i, song_i, requested_lenght = values
 
         SIGNAL_interactive_i = float(percentage)/1000.0 # 1000 = 100% = 1.0
         SIGNAL_model_i = int(model_i)
         SIGNAL_song_i = int(song_i)
+        SIGNAL_requested_lenght = int(requested_lenght)
 
     print("Also starting a OSC listener at ",OSC_address,OSC_port,OSC_bind, "to listen for interactive signal (0-1000).")
     osc = OSCThreadServer()
