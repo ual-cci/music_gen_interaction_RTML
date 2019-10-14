@@ -100,7 +100,8 @@ OSC_bind = b'/send_i'
 
 # global SIGNAL_interactive_i
 SIGNAL_interactive_i = 0.0
-
+SIGNAL_model_i = 2 #< if i want it to start with it, hardcode it here for now
+SIGNAL_song_i = 0
 
 class ClientMusic(object):
     PORT = "5000"
@@ -122,7 +123,12 @@ class ClientMusic(object):
 
     def audio_from_server(self, requested_lenght):
         t_start_request = timer()
-        payload = {"requested_length": str(requested_lenght), "interactive_i": str(SIGNAL_interactive_i)}
+        payload = {"requested_length": str(requested_lenght),
+                   "interactive_i": str(SIGNAL_interactive_i),
+                   "model_i": str(SIGNAL_model_i),
+                   "song_i": str(SIGNAL_song_i),
+                   }
+
         r = requests.post(self.Handshake_GETAUDIO_API_URL, files=payload).json()
         #print("Get audio request data", r)
 
@@ -169,8 +175,8 @@ class ClientMusic(object):
             #requested_lenght = 128
             requested_lenght = 128
             #requested_lenght = 64
-            #requested_lenght = 1024 # i expect delay, but then it playing smoothly for a bit, RIGHT?
-            #requested_lenght = 8
+            requested_lenght = 1024 # i expect delay, but then it playing smoothly for a bit, RIGHT?
+            requested_lenght = 4
             audio_response = self.audio_from_server(requested_lenght)
 
             name = "_"+str(t).zfill(3)
@@ -253,8 +259,15 @@ try:
 
     def callback(*values):
         global SIGNAL_interactive_i
+        global SIGNAL_model_i
+        global SIGNAL_song_i
         print("OSC got values: {}".format(values))
-        SIGNAL_interactive_i = float(values[0])/1000.0 # 1000 = 100% = 1.0
+        # [percentage, model_i, song_i]
+        percentage, model_i, song_i = values
+
+        SIGNAL_interactive_i = float(percentage)/1000.0 # 1000 = 100% = 1.0
+        SIGNAL_model_i = int(model_i)
+        SIGNAL_song_i = int(song_i)
 
     print("Also starting a OSC listener at ",OSC_address,OSC_port,OSC_bind, "to listen for interactive signal (0-1000).")
     osc = OSCThreadServer()

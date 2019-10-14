@@ -110,6 +110,12 @@ def get_audio():
 
         DEFAULT_lenght = 1024
         DEFAULT_interactive_i = 0.0
+        DEFAULT_model_i = 0
+        DEFAULT_song_i = 0
+        requested_length = DEFAULT_lenght
+        interactive_i = DEFAULT_interactive_i
+        model_i = DEFAULT_model_i
+        song_i = DEFAULT_song_i
 
         if len(flask.request.files) and SERVER_VERBOSE > 1:
             print("Recieved flask.request.files = ",flask.request.files)
@@ -117,21 +123,44 @@ def get_audio():
         try:
             requested_length = flask.request.files["requested_length"].read()
             interactive_i = flask.request.files["interactive_i"].read()
-            print("received: ",requested_length, interactive_i)
+            model_i = flask.request.files["model_i"].read()
+            song_i = flask.request.files["song_i"].read()
+            print("received: ",requested_length, interactive_i, model_i, song_i)
 
             requested_length = int(requested_length)
             interactive_i = float(interactive_i)
+            model_i = int(model_i)
+            song_i = int(song_i)
 
         except Exception as e:
             print("failed to read the requested_length", e)
-            requested_length = DEFAULT_lenght
-            interactive_i = DEFAULT_interactive_i
 
         print("Server will generate audio of requested length",requested_length,". Interactive i=",interactive_i)
 
         t_decode_end = timer()
 
         global serverside_handler
+
+        current_model_i = serverside_handler.model_i
+        current_song_i = serverside_handler.song_i
+
+        # Perhaps do this differently ... so it doesn't get the server stuck!
+        if song_i != current_song_i:
+            print("Loading new song data! (",song_i,")")
+            t_load_song = timer()
+            serverside_handler.load_impulses(song_i=song_i)
+            t_load_song = timer() - t_load_song
+            print("Loading took = ", t_load_song, "sec")
+
+        if model_i != current_model_i:
+            print("Loading new model weights! (",model_i,")")
+            t_load_model = timer()
+            ##serverside_handler.model_handler.create_model() # << REDO EVERYTHING? Hope that it wont be needed
+            serverside_handler.load_weights(model_i=model_i)
+            t_load_model = timer() - t_load_model
+            print("Loading took = ", t_load_model, "sec")
+
+
         audio_arr, t_predict, t_reconstruct = serverside_handler.generate_audio_sample(requested_length, interactive_i)
         data["audio_response"] = audio_arr.tolist()
         data["time_predict"] = t_predict

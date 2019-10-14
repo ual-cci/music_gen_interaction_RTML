@@ -31,25 +31,31 @@ class AudioDatasetGenerator:
         self.hop_size = hop_size
         self.sequence_length = sequence_length
         self.sample_rate = sample_rate
+        self.is_shuffled = False
 
-    def load(self, data_path, force=False, prevent_shuffling=False):
-        #HAX:
-        #self._generate_data__testReconstr(data_path)
-        #assert False
-
+    def load(self, data_path, force_recalc=False, prevent_shuffling=False):
         """Loads the dataset from either the binary numpy file, or generates
         from a folder of wav files specified at the data_path."""
-        x_frames_name = os.path.join(data_path, "x_frames.npy")
-        y_frames_name = os.path.join(data_path, "y_frames.npy")
-        if os.path.isfile(x_frames_name) and os.path.isfile(y_frames_name) and force == False:
+
+        # .npy name
+        npy_filename = "_frames.npy"
+        if prevent_shuffling:
+            npy_filename = "_frames_NotShuffled.npy"
+
+        x_frames_name = os.path.join(data_path, "x"+npy_filename)
+        y_frames_name = os.path.join(data_path, "y"+npy_filename)
+
+        if os.path.isfile(x_frames_name) and os.path.isfile(y_frames_name) and force_recalc == False:
             self.x_frames = np.load(x_frames_name)
             self.y_frames = np.load(y_frames_name)
         elif os.path.exists(data_path):
+            # Or make and save it:
             self._generate_data(data_path)
             self.x_frames = np.array(self.x_frames)
             self.y_frames = np.array(self.y_frames)
 
             if not prevent_shuffling:
+                self.is_shuffled = True
                 self.x_frames, self.y_frames = self.unison_shuffled_copies(self.x_frames,
                                                                            self.y_frames)
             np.save(x_frames_name, self.x_frames)

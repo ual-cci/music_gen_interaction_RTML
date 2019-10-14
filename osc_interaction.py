@@ -11,8 +11,13 @@ class OSCSender(object):
     """
 
     def onChangeSend(self,x):
-        print("Sending x=", x)
-        self.osc.send_message(b'/send_i', [x])
+
+        percentage = cv2.getTrackbarPos('Percentage', 'InteractiveMusicGeneration')
+        model_i = cv2.getTrackbarPos('Model', 'InteractiveMusicGeneration')
+        song_i = cv2.getTrackbarPos('Song as seed', 'InteractiveMusicGeneration')
+
+        print("Sending message=", [percentage, model_i, song_i])
+        self.osc.send_message(b'/send_i', [percentage, model_i, song_i])
 
     def __init__(self):
         address = "127.0.0.1"
@@ -34,6 +39,8 @@ class OSCSender(object):
 
         # create trackbars for color change
         cv2.createTrackbar('Percentage', 'InteractiveMusicGeneration', 0, 1000, self.onChangeSend)
+        cv2.createTrackbar('Model', 'InteractiveMusicGeneration', 0, 6, self.onChangeSend)
+        cv2.createTrackbar('Song as seed', 'InteractiveMusicGeneration', 0, 6, self.onChangeSend)
 
         while (1):
             # also keep another inf. loop
