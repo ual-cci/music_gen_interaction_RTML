@@ -90,6 +90,12 @@ class ModelHandlerLSTM(object):
 
     def load_model(self, path):
         print("Loading a pretrained model")
+
+        tensor_name_list = [tensor.name for tensor in tf.get_default_graph().as_graph_def().node]
+        print("We have", len(tensor_name_list), "tensors loaded in default graph!")
+        #for tensor_name in tensor_name_list:
+        #    print(tensor_name, '\n')
+
         self.model.load(path)
 
     def create_model(self, sequence_length = 40):

@@ -50,7 +50,7 @@ class Server(object):
         if PRODUCTION:
             serve(app, host='127.0.0.1', port=5000)
         else:
-            app.run()
+            app.run(threaded=False) # < with forbiding threaded we still have the same default graph
 
     def mem_monitor_deamon(self, frequency_sec):
         import subprocess
@@ -144,6 +144,11 @@ def get_audio():
         current_model_i = serverside_handler.model_i
         current_song_i = serverside_handler.song_i
 
+        print("current_model_i=",current_model_i)
+        print("current_song_i=",current_song_i)
+        print("sent model_i=",model_i)
+        print("sent song_i=",song_i)
+
         # Perhaps do this differently ... so it doesn't get the server stuck!
         if song_i != current_song_i:
             print("Loading new song data! (",song_i,")")
@@ -182,6 +187,22 @@ def get_audio():
     if SERVER_VERBOSE > 1:
         print("JSONify took", t_to_jsonify, "sec.")
 
+    return as_json
+
+@app.route("/debugMethod", methods=["GET"])
+def debugMethod():
+    # This just does something I want to test...
+    data = {"success": False}
+    try:
+        global serverside_handler
+        serverside_handler.load_weights(model_i=5)
+
+        # indicate that the request was a success
+        data["success"] = True
+    except Exception as e:
+        print("something went wrong!", e)
+
+    as_json = flask.jsonify(data)
     return as_json
 
 def get_gpus_buses():

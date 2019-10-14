@@ -47,11 +47,13 @@ class ServerHandler(object):
         print("Model loaded in", t_load_model, ", song loaded in", t_load_song, "(sec).")
         # Time on potato pc: Model loaded in 1.007, song loaded in 12.365 (sec).
 
+
     def prepare_songs_models_paths(self):
         # from model_i and song_i
         #model_path_start = "/media/vitek/Data/Vitek/Projects/2019_LONDON/music generation/saved_models/"
         model_path_start = "/media/vitek/SCAN/LONDON_external_data/ProcessedMusicData/__saved_models/"
-        model_paths = ["modelBest_DNB1.tfl", "modelBest_LPAmbient.tfl", "modelBest_Mehldau.tfl", "modelBest_Ambient.tfl"
+        model_path_start = "__saved_models/"
+        model_paths = ["modelBest_DNB1.tfl", "modelBest_LPAmbient.tfl", "modelBest_Mehldau.tfl", "modelBest_Ambient.tfl",
                        "modelBest_Dungeon.tfl", "modelBest_Orchestral.tfl", "modelBest_Sneak.tfl"]
         self.model_paths = [model_path_start+p for p in model_paths]
 
@@ -61,6 +63,7 @@ class ServerHandler(object):
         #song_paths = ["dnb.wav", "SwordSworceryLP.wav", "brad-mehldau_2min.wav", "ambience-demos-1-5.wav"
         #                 "dungeon-demos-1-5.wav","fantasy-orchestral-demos-1-5.wav", "sneaking-demos-1-5.wav"]
         song_paths_start = "/media/vitek/SCAN/LONDON_external_data/ProcessedMusicData/_music_samples/"
+        song_paths_start = "__music_samples/"
         song_paths = ["dnb", "lp", "mehldau", "ambience", "dungeon","orchestral", "sneak"]
         self.song_paths = [song_paths_start+s+"/" for s in song_paths]
 
@@ -74,6 +77,8 @@ class ServerHandler(object):
             self.model_handler.load_model(model_path)
         else:
             print("[WARN!] No weights loaded in the model - it won't generate anything meaningful ...")
+
+        self.model_i = model_i
 
     def load_impulses(self, song_i):
         """
@@ -97,6 +102,7 @@ class ServerHandler(object):
             print("[WARN!] No impulses for loading! Will generate some nonesence instead, but it won't really work.")
             self.preloaded_impulses = np.random.rand(10, 40, 1025)
 
+        self.song_i = song_i
         print("Preloaded", len(self.preloaded_impulses), "impulse samples.")
 
 
