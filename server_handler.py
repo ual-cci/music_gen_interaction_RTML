@@ -15,9 +15,11 @@ class ServerHandler(object):
 
     """
 
-    def __init__(self, args):
+    def __init__(self, settings, args):
         print("Server settings: args.lstm_layers=", args.lstm_layers, ", args.lstm_units=", args.lstm_units,
               ", args.griffin_iterations=", args.griffin_iterations, ", args.sample_rate=", args.sample_rate)
+        self.settings = settings
+
         lstm_layers = int(args.lstm_layers)
         lstm_units = int(args.lstm_units)
         griffin_iterations = int(args.griffin_iterations)
@@ -50,20 +52,14 @@ class ServerHandler(object):
 
     def prepare_songs_models_paths(self):
         # from model_i and song_i
-        #model_path_start = "/media/vitek/Data/Vitek/Projects/2019_LONDON/music generation/saved_models/"
-        model_path_start = "/media/vitek/SCAN/LONDON_external_data/ProcessedMusicData/__saved_models/"
-        model_path_start = "__saved_models/"
+        model_path_start = self.settings.server_model_paths_start
         model_paths = ["modelBest_DNB1.tfl", "modelBest_LPAmbient.tfl", "modelBest_Mehldau.tfl", "modelBest_Ambient.tfl",
                        "modelBest_Dungeon.tfl", "modelBest_Orchestral.tfl", "modelBest_Sneak.tfl"]
         self.model_paths = [model_path_start+p for p in model_paths]
 
         # Loading from WAVs will be slow ... maybe load from the NPY's directly?
 
-        #song_paths_start = "music_samples/"
-        #song_paths = ["dnb.wav", "SwordSworceryLP.wav", "brad-mehldau_2min.wav", "ambience-demos-1-5.wav"
-        #                 "dungeon-demos-1-5.wav","fantasy-orchestral-demos-1-5.wav", "sneaking-demos-1-5.wav"]
-        song_paths_start = "/media/vitek/SCAN/LONDON_external_data/ProcessedMusicData/_music_samples/"
-        song_paths_start = "__music_samples/"
+        song_paths_start = self.settings.server_songs_paths_start
         song_paths = ["dnb", "lp", "mehldau", "ambience", "dungeon","orchestral", "sneak"]
         self.song_paths = [song_paths_start+s+"/" for s in song_paths]
 

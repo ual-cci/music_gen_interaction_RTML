@@ -10,6 +10,7 @@ import numpy as np
 import socket
 import cv2
 import server_handler
+import settings
 
 # Thanks to the tutorial at: https://blog.keras.io/building-a-simple-keras-deep-learning-rest-api.html
 
@@ -35,6 +36,7 @@ class Server(object):
     def __init__(self, args):
         print("Server ... starting server and loading model ... please wait until its started ...")
 
+        self.settings = settings.Settings()
         self.load_serverside_handler(args)
 
         frequency_sec = 10.0
@@ -65,7 +67,7 @@ class Server(object):
 
     def load_serverside_handler(self, args):
         global serverside_handler
-        serverside_handler = server_handler.ServerHandler(args)
+        serverside_handler = server_handler.ServerHandler(self.settings, args)
         print('Server handler loaded.')
 
 
