@@ -3,6 +3,7 @@ import audio_handler
 import model_handler_lstm
 from utils import file_functions
 from timeit import default_timer as timer
+import cooked_files_handler
 
 class ServerHandler(object):
     """
@@ -35,7 +36,8 @@ class ServerHandler(object):
         self.model_handler.create_model()
         print("Created model:", self.model_handler.model)
 
-        self.prepare_songs_models_paths()
+        self.songs_models = cooked_files_handler.CookedFilesHandler(settings)
+        self.songs_models.prepare_songs_models_paths()
 
         # Load model weights & song impulses
         t_load_model = timer()
@@ -49,24 +51,8 @@ class ServerHandler(object):
         print("Model loaded in", t_load_model, ", song loaded in", t_load_song, "(sec).")
         # Time on potato pc: Model loaded in 1.007, song loaded in 12.365 (sec).
 
-
-    def prepare_songs_models_paths(self):
-        # from model_i and song_i
-        model_path_start = self.settings.server_model_paths_start
-        model_paths = ["modelBest_DNB1.tfl", "modelBest_LPAmbient.tfl", "modelBest_Mehldau.tfl", "modelBest_Ambient.tfl",
-                       "modelBest_Dungeon.tfl", "modelBest_Orchestral.tfl", "modelBest_Sneak.tfl"]
-        self.model_paths = [model_path_start+p for p in model_paths]
-
-        # Loading from WAVs will be slow ... maybe load from the NPY's directly?
-
-        song_paths_start = self.settings.server_songs_paths_start
-        song_paths = ["dnb", "lp", "mehldau", "ambience", "dungeon","orchestral", "sneak"]
-        self.song_paths = [song_paths_start+s+"/" for s in song_paths]
-
-        print("prepared", len(self.model_paths), "models and ", len(self.song_paths), "songs.")
-
     def load_weights(self, model_i):
-        model_path = self.model_paths[model_i]
+        model_path = self.songs_models.model_paths[model_i]
         print("Loading ...", model_path.split("/")[-1])
         # Load model weights
         if file_functions.file_exists(model_path+".data-00000-of-00001"):
@@ -86,7 +72,7 @@ class ServerHandler(object):
             self.preloaded_impulses = np.random.rand(4, 40, 1025)
         """
 
-        song_path = self.song_paths[song_i]
+        song_path = self.songs_models.song_paths[song_i]
         print("Loading music data...", song_path.split("/")[-2:])
 
         dataset = self.audio_handler.load_dataset(song_path)
@@ -134,10 +120,10 @@ class ServerHandler(object):
         audio = self.audio_handler.spectrogram2audio(predicted_spectrogram)
 
         # Return only the generated audio?
-        """ # THE REMAINING AUDIO IS NOT LONG ENOUGH TO BE REAL TIME
+        #""" # Keep only generated:
         perc_idx = int((len(audio) - 1) * (1.0-perc))
         audio = audio[perc_idx:]
-        """
+        #"""
 
         print("audio.shape", audio.shape)
         t_reconstruct_end = timer()
