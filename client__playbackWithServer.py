@@ -90,7 +90,8 @@ def process(frames):
 # Use queues to pass data to/from the audio backend
 queuesize = 1000
 blocksize = 1024 # 256, 512 and 1024 are alright
-#blocksize = 512
+blocksize = 2048 # 256, 512 and 1024 are alright
+blocksize = 2*2048 # 256, 512 and 1024 are alright
 
 qout = queue.Queue(maxsize=queuesize)
 qin = queue.Queue(maxsize=queuesize)
@@ -103,11 +104,11 @@ OSC_port = 8000
 OSC_bind = b'/send_i'
 
 # global SIGNAL_interactive_i
-SIGNAL_interactive_i = 0.0
+SIGNAL_interactive_i = 0.2
 SIGNAL_model_i = 0 #< if i want it to start with it, hardcode it here for now
 SIGNAL_song_i = 0
 
-SIGNAL_requested_lenght = 128
+SIGNAL_requested_lenght = 32 # lets start with small
 
 class ClientMusic(object):
     PORT = "5000"
@@ -145,6 +146,20 @@ class ClientMusic(object):
 
         audio_response = np.asarray(audio_response)
 
+        ###
+        """
+        t_plot_start = timer()
+        fs = 44100
+        import matplotlib.pyplot as plt
+        plt.figure()
+        #Time = np.linspace(0, len(audio_response) / fs, num=len(audio_response))
+        plt.plot(audio_response)
+        plt.savefig("last.png")
+        t_plot_end = timer()
+        print("plot time =", (t_plot_end-t_plot_start))
+        """
+        ###
+
         t_end_request = timer()
 
         t_server_total = r["time_server_total"]
@@ -181,9 +196,10 @@ class ClientMusic(object):
             audio_response = self.audio_from_server(SIGNAL_requested_lenght)
 
             # Resample:
-            #audio_response = librosa.resample(audio_response, 22050, 48000)
+            #audio_response = librosa.resample(audio_response, 22050, 48000) # error prone
             #print(audio_response.shape)
             audio_response = signal.resample(audio_response, len(audio_response)*2) # 22050 of model * 2
+            #audio_response = signal.resample(audio_response, int(len(audio_response)*2.1768710595291507)) # hopefully 48000 ... many jackd errrs
             #print(audio_response.shape)
 
             name = "_"+str(t).zfill(3)
