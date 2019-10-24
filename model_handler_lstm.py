@@ -149,6 +149,8 @@ class ModelHandlerLSTM(object):
         dimension1 = self.input_shapes[1]
         dimension2 = self.input_shapes[2]
 
+        next_generation_impulse = None
+
         predicted_magnitudes = input_impulse
         for j in range(requested_length):
             shape = (1, dimension1, dimension2, 1) if self.use_cnn else (1, dimension1, dimension2)
@@ -161,6 +163,8 @@ class ModelHandlerLSTM(object):
             predicted_magnitudes = np.vstack((predicted_magnitudes, prediction))
             input_impulse = predicted_magnitudes[-self.sequence_length:]
 
+            next_generation_impulse = input_impulse
+
             # mix in?
             if (np.random.random_sample() < random_chance):
                 idx = np.random.randint(0, self.sequence_length)
@@ -168,7 +172,7 @@ class ModelHandlerLSTM(object):
 
         predicted_magnitudes = np.array(predicted_magnitudes).reshape(-1, window_size + 1)
 
-        return predicted_magnitudes
+        return predicted_magnitudes, next_generation_impulse
 
 # Example calls and outputs:
 """
