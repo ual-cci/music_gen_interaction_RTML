@@ -109,6 +109,7 @@ SIGNAL_model_i = 0 #< if i want it to start with it, hardcode it here for now
 SIGNAL_song_i = 0
 
 SIGNAL_requested_lenght = 32 # lets start with small
+WAIT_if_qout_larger_div = 4
 
 class ClientMusic(object):
     PORT = "5000"
@@ -187,13 +188,15 @@ class ClientMusic(object):
             # or just wait when you have something to play
             global SIGNAL_requested_lenght
 
-            while qout.qsize() > SIGNAL_requested_lenght: # maybe use that?
+            while qout.qsize() > (SIGNAL_requested_lenght / WAIT_if_qout_larger_div): # maybe use that?
                 time.sleep(0.05)
 
             if DEBUG_simulate_slowdown_pre:
                 time.sleep(3.1) # < what if it takes long time??? => Then it's choppy!
 
             audio_response = self.audio_from_server(SIGNAL_requested_lenght)
+
+
 
             # Resample:
             #audio_response = librosa.resample(audio_response, 22050, 48000) # error prone
@@ -211,14 +214,52 @@ class ClientMusic(object):
             batch_arr = []
 
             if len(last_bit) > 0:
+                # v1 = Concat - clicking occurs
                 # concat previous last_bit to audio_response:
                 #print("concat", np.asarray(last_bit).shape, "to", audio_response.shape)
-                audio_response = np.concatenate((last_bit, audio_response))
+                #audio_response = np.concatenate((last_bit, audio_response))
                 #print("into", np.asarray(audio_response).shape)
+
+                #"""
+                # v2 = Crossfade with a small number of samples - these will get lost (but if they are few enough, who cares!)
+                cross_len = 32
+                assert cross_len <= 1024
+
+                first_sample = last_bit[:-cross_len]
+                first_overlap_mix = last_bit[-cross_len:]
+                second_overlap_mix = audio_response[:cross_len]
+                second_sample = audio_response[cross_len:]
+
+                """
+                print("mixing:")
+                print("audio/L+D (D=1):", len(audio_response) / (SIGNAL_requested_lenght+1))
+                print("audio/L+D (D=0):", len(audio_response) / (SIGNAL_requested_lenght))
+                print("a:", last_bit.shape)
+                print("b:", audio_response.shape)
+                print("into:")
+                print("first_sample:", first_sample.shape)
+                print("first_overlap_mix:", first_overlap_mix.shape)
+                print("second_overlap_mix:", second_overlap_mix.shape)
+                print("second_sample:", second_sample.shape)
+                """
+
+                # simple mix
+                mixed = first_overlap_mix/2.0 + second_overlap_mix/2.0
+
+                # linear cross
+                for t in range(cross_len):
+                    alpha = t / float(cross_len) # 0 to 1
+                    sv1 = first_overlap_mix[t]
+                    sv2 = second_overlap_mix[t]
+                    mixed[t] = sv1 * (1 - alpha) + sv2 * alpha
+
+                audio_response = np.concatenate((first_sample, mixed, second_sample))
+
 
             len_of_audio_response = len(audio_response)
 
-            while (l+1)*blocksize <= len_of_audio_response:
+
+            while (l+1+1)*blocksize <= len_of_audio_response:
                 sample = np.asarray(audio_response[l * blocksize:(l + 1) * blocksize])
                 #print("l=",l,"sample=",sample.shape, "[",l * blocksize, "-", (l + 1) * blocksize ,"]")
                 l += 1
@@ -226,8 +267,8 @@ class ClientMusic(object):
                 batch_arr.append(sample)
 
             # last bit is in the rest
-            last_bit = np.asarray(audio_response[l * blocksize:])
-            #print("last bit with l=", l, "sample=", last_bit.shape, "[", l * blocksize, "- end (36350)", "]")
+            last_bit = np.asarray(audio_response[(l) * blocksize:])
+            print("last bit with l=", l, "sample=", last_bit.shape, "[", l * blocksize, "- end (36350)", "]")
 
             """
             batch_size = 100

@@ -145,11 +145,14 @@ def get_audio():
 
         current_model_i = serverside_handler.model_i
         current_song_i = serverside_handler.song_i
+        current_interactive_i = serverside_handler.interactive_i
 
         print("current_model_i=",current_model_i)
         print("current_song_i=",current_song_i)
+        print("current_interactive_i=",current_interactive_i)
         print("sent model_i=",model_i)
         print("sent song_i=",song_i)
+        print("sent interactive_i=",interactive_i)
 
         # Perhaps do this differently ... so it doesn't get the server stuck!
         if song_i != current_song_i:
@@ -167,8 +170,17 @@ def get_audio():
             t_load_model = timer() - t_load_model
             print("Loading took = ", t_load_model, "sec")
 
+        if not serverside_handler.continue_impulse_from_previous_batch or (interactive_i != current_interactive_i):
+            # Either change impulse every generation - or when it was changed
+            print("Start with a new impulse:")
+            serverside_handler.change_impulse(interactive_i)
 
-        audio_arr, t_predict, t_reconstruct = serverside_handler.generate_audio_sample(requested_length, interactive_i)
+
+
+        # Ps: probably nicer when solving this on the client side!
+        audio_arr, t_predict, t_reconstruct = serverside_handler.generate_audio_sample_WITHOUT_CROSSFADED_OVERLAP(requested_length, interactive_i)
+        #audio_arr, t_predict, t_reconstruct = serverside_handler.generate_audio_sample_OVERLAP(requested_length, interactive_i)
+
         data["audio_response"] = audio_arr.tolist()
         data["time_predict"] = t_predict
         data["time_reconstruct"] = t_reconstruct
