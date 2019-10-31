@@ -18,7 +18,7 @@ import settings
 PRODUCTION = True # waitress - production-quality pure-Python WSGI server with very acceptable performance
 PRODUCTION = False # Flask
 
-SERVER_VERBOSE = 2  # 2 = all messages, 1 = only important ones, 0 = none!
+SERVER_VERBOSE = 1  # 2 = all messages, 1 = only important ones, 0 = none!
 
 if PRODUCTION:
     from waitress import serve
@@ -68,6 +68,7 @@ class Server(object):
     def load_serverside_handler(self, args):
         global serverside_handler
         serverside_handler = server_handler.ServerHandler(self.settings, args)
+        serverside_handler.VERBOSE = SERVER_VERBOSE
         print('Server handler loaded.')
 
 
@@ -127,7 +128,8 @@ def get_audio():
             interactive_i = flask.request.files["interactive_i"].read()
             model_i = flask.request.files["model_i"].read()
             song_i = flask.request.files["song_i"].read()
-            print("received: ",requested_length, interactive_i, model_i, song_i)
+            if SERVER_VERBOSE > 1:
+                print("received: ",requested_length, interactive_i, model_i, song_i)
 
             requested_length = int(requested_length)
             interactive_i = float(interactive_i)
@@ -147,12 +149,13 @@ def get_audio():
         current_song_i = serverside_handler.song_i
         current_interactive_i = serverside_handler.interactive_i
 
-        print("current_model_i=",current_model_i)
-        print("current_song_i=",current_song_i)
-        print("current_interactive_i=",current_interactive_i)
-        print("sent model_i=",model_i)
-        print("sent song_i=",song_i)
-        print("sent interactive_i=",interactive_i)
+        if SERVER_VERBOSE > 1:
+            print("current_model_i=",current_model_i)
+            print("current_song_i=",current_song_i)
+            print("current_interactive_i=",current_interactive_i)
+            print("sent model_i=",model_i)
+            print("sent song_i=",song_i)
+            print("sent interactive_i=",interactive_i)
 
         # Perhaps do this differently ... so it doesn't get the server stuck!
         if song_i != current_song_i:

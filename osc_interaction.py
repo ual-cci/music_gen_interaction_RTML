@@ -30,7 +30,7 @@ class OSCSender(object):
 
     def __init__(self):
         address = "127.0.0.1"
-        port = 8000
+        port = 8008
         self.osc = OSCClient(address, port)
         self.text = ""
 
@@ -40,6 +40,13 @@ class OSCSender(object):
         self.settings = settings.Settings()
         self.songs_models = cooked_files_handler.CookedFilesHandler(self.settings)
         self.songs_models.prepare_songs_models_paths()
+
+    def __del__(self):
+        self.stop_osc()
+
+    def stop_osc(self):
+        print("Stopping OSC (interactor)")
+        self.osc.stop()
 
     def start_window_rendering(self):
 
@@ -56,9 +63,9 @@ class OSCSender(object):
 
         # create trackbars for color change
         cv2.createTrackbar('Percentage', 'InteractiveMusicGeneration', 200, 1000, self.onChangeSend)
-        cv2.createTrackbar('Model', 'InteractiveMusicGeneration', 0, len(self.songs_models.names_for_debug)-1, self.onChangeSend)
-        cv2.createTrackbar('Song as seed', 'InteractiveMusicGeneration', 0, len(self.songs_models.names_for_debug)-1, self.onChangeSend)
-        cv2.createTrackbar('Length', 'InteractiveMusicGeneration', 32, 128, self.onChangeSend)
+        cv2.createTrackbar('Model', 'InteractiveMusicGeneration', 0, len(self.songs_models.model_paths)-1, self.onChangeSend)
+        cv2.createTrackbar('Song as seed', 'InteractiveMusicGeneration', 0, len(self.songs_models.song_paths)-1, self.onChangeSend)
+        cv2.createTrackbar('Length', 'InteractiveMusicGeneration', 32, 64, self.onChangeSend)
 
         self.onChangeSend(x=None) # toggle once at start
 

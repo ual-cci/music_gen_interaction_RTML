@@ -3,7 +3,8 @@ from multiprocessing import Pool
 
 import subprocess
 subprocess.run(["killall", "jackd"])
-subprocess.Popen(["jackd", "-R", "-d", "alsa", "-r", "44100"])
+subprocess.run(["pkill", "-f", "client__playbackWithServer.py"]) # prevent frozen instances!
+subprocess.Popen(["jackd", "-R", "-d", "alsa", "-r", "44100"]) # start jackd with specific rate 44.1kHz
 
 processes = ('server.py', 'osc_interaction.py', 'client__playbackWithServer.py')
 

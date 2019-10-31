@@ -57,6 +57,7 @@ class ServerHandler(object):
         print("Model loaded in", t_load_model, ", song loaded in", t_load_song, "(sec).")
         # Time on potato pc: Model loaded in 1.007, song loaded in 12.365 (sec).
 
+        self.VERBOSE = 1
 
     def load_weights(self, model_i):
         model_path = self.songs_models.model_paths[model_i]
@@ -122,15 +123,17 @@ class ServerHandler(object):
 
         t_predict_start = timer()
         predicted_spectrogram, last_impulse = self.model_handler.generate_sample(impulse, requested_length)
-        print("predicted_spectrogram.shape", predicted_spectrogram.shape)
+        #print("predicted_spectrogram.shape", predicted_spectrogram.shape)
 
         self.impulse = last_impulse
 
         t_reconstruct_start = timer()
 
-        print("Requested versus from impulse seed: requested_length=",requested_length,"seed=",self.model_handler.sequence_length)
+        if self.VERBOSE > 1:
+            print("Requested versus from impulse seed: requested_length=",requested_length,"seed=",self.model_handler.sequence_length)
         perc = float(requested_length) / (float(self.model_handler.sequence_length) + float(requested_length))
-        print("Percentage = ",perc, "(only this is new)")
+        if self.VERBOSE > 1:
+            print("Percentage = ",perc, "(only this is new)")
 
         audio = self.audio_handler.spectrogram2audio(predicted_spectrogram)
 

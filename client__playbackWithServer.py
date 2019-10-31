@@ -70,15 +70,21 @@ def get_audio_chunk_from_server_HAX():
     return audio_chunk
 """
 
+RECEIVED_FIRST_RESPONSE = False
+
 def process(frames):
+    global RECEIVED_FIRST_RESPONSE
+
     previous = np.zeros(blocksize, )
     if VERBOSE_queues_status:
         print("qout", qout.qsize(), "/", queuesize)
 
     if qout.empty():
-        print("empty, waiting with nothing!")
+        if RECEIVED_FIRST_RESPONSE: # don't bug the user ...
+            print("empty, waiting with nothing!")
         client.outports[0].get_array()[:] = previous
     else:
+
         #print("we have smth")
         data = qout.get()
         previous = data
@@ -100,7 +106,7 @@ event = Event()
 CLIENT_sample_rate = 22050
 
 OSC_address = '0.0.0.0'
-OSC_port = 8000
+OSC_port = 8008
 OSC_bind = b'/send_i'
 
 # global SIGNAL_interactive_i
@@ -160,6 +166,10 @@ class ClientMusic(object):
         t_decode = r["time_decode"]
 
         audio_response = np.asarray(audio_response)
+
+        # ok, from now on permit the Client to be loud ...
+        global RECEIVED_FIRST_RESPONSE
+        RECEIVED_FIRST_RESPONSE = True
 
         ###
         """
@@ -381,9 +391,12 @@ try:
             data = qin.get()
             qout.put(data)
 
+    print("Stopping OSC (client)")
     osc.stop()
 
 except (queue.Full):
     raise RuntimeError('Queue full')
 except KeyboardInterrupt:
     print('\nInterrupted by User')
+except OSError:
+    print('\nOSC ERROR, change the ports')
