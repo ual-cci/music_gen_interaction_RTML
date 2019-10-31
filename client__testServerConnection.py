@@ -47,6 +47,12 @@ for len_to_test in sequence_to_try:
         t_start_request = timer()
         Handshake_GETAUDIO_API_URL = "http://localhost:"+PORT+"/get_audio"
         payload = {"requested_length": str(len_to_test)}
+        payload = {"requested_length": str(len_to_test),
+                   "interactive_i": str(0),
+                   "model_i": str(0),
+                   "song_i": str(0),
+                   }
+
         r = requests.post(Handshake_GETAUDIO_API_URL, files=payload).json()
         #print("Get audio request data", r)
 
@@ -187,7 +193,8 @@ ax.set_xticklabels(labels)
 ax.legend()
 
 
-filename = slugify(title)
+#filename = slugify(title)
+filename = "speeds"
 plt.savefig("plots/"+filename+".png", dpi=200)
 #plt.savefig("plots/"+filename+".pdf", dpi=200)
 
