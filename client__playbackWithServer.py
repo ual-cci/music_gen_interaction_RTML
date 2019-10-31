@@ -119,15 +119,29 @@ class ClientMusic(object):
     sample_rate = 22050
 
     def setup_server_connection(self):
+        first_time = True
+        connection_successful = False
+        while not connection_successful:
+            if not first_time:
+                sleep(5)
+            else:
+                first_time = False
 
-        payload = {"client": "client", "backup_name": "Bob"}
-        print("trying at ", self.Handshake_REST_API_URL)
-        r = requests.post(self.Handshake_REST_API_URL, files=payload).json()
-        print("Handshake request data", r)
+            print("Attempting connection between the client and server")
+            try:
 
-        # GET SERVER SETTINGS PROBABLY!
-        # OR SETUP SERVER ALSO HERE
-        # sample_rate = from response ...
+                payload = {"client": "client", "backup_name": "Bob"}
+                print("trying at ", self.Handshake_REST_API_URL)
+                r = requests.post(self.Handshake_REST_API_URL, files=payload).json()
+                print("Handshake request data", r)
+
+                # GET SERVER SETTINGS PROBABLY!
+                # OR SETUP SERVER ALSO HERE
+                # sample_rate = from response ...
+                connection_successful = True
+
+            except Exception as e:
+                print("Failed connecting Client to Server (will try again)")
 
     def audio_from_server(self, requested_lenght):
         t_start_request = timer()
@@ -223,6 +237,7 @@ class ClientMusic(object):
                 #"""
                 # v2 = Crossfade with a small number of samples - these will get lost (but if they are few enough, who cares!)
                 cross_len = 32
+                cross_len = 128
                 assert cross_len <= 1024
 
                 first_sample = last_bit[:-cross_len]
