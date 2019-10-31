@@ -91,7 +91,7 @@ def process(frames):
 queuesize = 1000
 blocksize = 1024 # 256, 512 and 1024 are alright
 blocksize = 2048 # 256, 512 and 1024 are alright
-blocksize = 2*2048 # 256, 512 and 1024 are alright
+#blocksize = 2*2048 # 256, 512 and 1024 are alright
 
 qout = queue.Queue(maxsize=queuesize)
 qin = queue.Queue(maxsize=queuesize)
@@ -109,7 +109,7 @@ SIGNAL_model_i = 0 #< if i want it to start with it, hardcode it here for now
 SIGNAL_song_i = 0
 
 SIGNAL_requested_lenght = 32 # lets start with small
-WAIT_if_qout_larger_div = 4
+WAIT_if_qout_larger_div = 2
 
 class ClientMusic(object):
     PORT = "5000"
