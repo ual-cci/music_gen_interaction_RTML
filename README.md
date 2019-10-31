@@ -6,12 +6,21 @@ Ideally we will have a strong PC with good GPU as a server and any machine (eg. 
 ## Install:
 Project is work in progress, so this will likely change and grow ...
 
-- `pip install Pillow, numpy, opencv-python, pywt`
+- `pip install Pillow numpy opencv-python PyWavelets tqdm slugify`
 - `pip install -U Flask`
-- `pip install librosa, tflearn`
+- `pip install librosa tflearn`
 - `jackd` (https://jackaudio.org/) and the python client library from https://github.com/spatialaudio/jackclient-python/
+  - `sudo apt-get install jack-tools`
+  - `pip install JACK-Client --user`
+- Put your data into `__music_samples` and `__saved_models`
+- Adjust parameter `WAIT_if_qout_larger_div` (in `client__playbackWithServer.py`) according to your PC performance (for slower PC set this value lower - to 1 or 2)
 
 ## Start with:
+
+First try running the demo (one file to rule them all) by:
+- `python demo.py`
+
+If this doesn't work, follow these steps:
 
 You will have to start the jackd on your pc:
 - `jackd -R -d alsa -r 44100` (this command might differ from pc to pc, depending on the soundcard and other setup)
