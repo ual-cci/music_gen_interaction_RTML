@@ -36,7 +36,7 @@ _This readme might be outdated ... I will try to make my best to follow the code
 
 ## (Note) Low performance PC setup:
 
-I was able to run this (both server+client+jackd) on my potato machine (aka no GPU, only CPU = Intel(R) Core(TM) i5-4300U CPU @ 1.90GHz -> goes turbo to 2.90GHz). Jackd sometimes zombifies. Anything better is much more preferable (for later features, faster reactivity and less zombies).
+I was able to run this (both server+client+jackd) on my potato machine (aka no GPU, only CPU = Intel(R) Core(TM) i5-4300U CPU @ 1.90GHz -> goes turbo to 2.60GHz). Jackd sometimes zombifies. Anything better is much more preferable (for later features, faster reactivity and less zombies).
 
 **client__playbackWithServer.py**
 ```
