@@ -33,3 +33,19 @@ Then start a server (on the same pc, or somewhere else with ssh tunneling), clie
 ## Note:
 
 _This readme might be outdated ... I will try to make my best to follow the code, but probably will return to it only when needed._
+
+## (Note) Low performance PC setup:
+
+I was able to run this (both server+client+jackd) on my potato machine (aka no GPU, only CPU = Intel(R) Core(TM) i5-4300U CPU @ 1.90GHz). Jackd sometimes zombifies. Anything better is much more preferable (for later features, faster reactivity and less zombies).
+
+**client__playbackWithServer.py**
+```
+SIGNAL_requested_lenght = 64 # bigger batches are a bit faster
+WAIT_if_qout_larger_div = 1  # less wasteful waiting time, but also less reactive (longer delay)
+cross_len = 32 # shorter client side crossfasing (might cause more audible clicks)
+```
+**server.py**
+```
+parser.add_argument('-griffin_iterations', help='iterations to use in griffin reconstruction', default='10') 
+# this one is the hardest hit I guess, still sounds reasonable though
+```
