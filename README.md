@@ -12,7 +12,9 @@ Project is work in progress, so this will likely change and grow ...
 - `jackd` (https://jackaudio.org/) and the python client library from https://github.com/spatialaudio/jackclient-python/
   - `sudo apt-get install jack-tools`
   - `pip install JACK-Client --user`
-- Put your data into `__music_samples` and `__saved_models`
+- Put your data into `__music_samples` and `__saved_models`:
+  - for example: `__music_samples/mehldau/input.wav`
+  - so that you have: `__saved_models/modelBest_Mehldau.tfl` (_ps: you can use https://github.com/Louismac/MAGNet to train your model - only remember to use the same settings for the model architecture_)
 - Adjust parameter `WAIT_if_qout_larger_div` (in `client__playbackWithServer.py`) according to your PC performance (for slower PC set this value lower - to 1 or 2)
 
 ## Start with:
