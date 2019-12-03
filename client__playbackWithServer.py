@@ -117,6 +117,9 @@ SIGNAL_song_i = 0
 SIGNAL_requested_lenght = 32 # lets start with small
 WAIT_if_qout_larger_div = 2
 
+
+WAIT_if_qout_larger_div = 1
+
 class ClientMusic(object):
     PORT = "5000"
     Handshake_REST_API_URL = "http://localhost:" + PORT + "/handshake"

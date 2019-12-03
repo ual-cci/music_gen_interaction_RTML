@@ -65,7 +65,8 @@ class OSCSender(object):
         cv2.createTrackbar('Percentage', 'InteractiveMusicGeneration', 200, 1000, self.onChangeSend)
         cv2.createTrackbar('Model', 'InteractiveMusicGeneration', 0, len(self.songs_models.model_paths)-1, self.onChangeSend)
         cv2.createTrackbar('Song as seed', 'InteractiveMusicGeneration', 0, len(self.songs_models.song_paths)-1, self.onChangeSend)
-        cv2.createTrackbar('Length', 'InteractiveMusicGeneration', 32, 64, self.onChangeSend)
+        #cv2.createTrackbar('Length', 'InteractiveMusicGeneration', 32, 64, self.onChangeSend)
+        cv2.createTrackbar('Length', 'InteractiveMusicGeneration', 32, 1024, self.onChangeSend)
 
         self.onChangeSend(x=None) # toggle once at start
 

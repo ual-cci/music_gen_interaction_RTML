@@ -36,8 +36,8 @@ class Server(object):
     def __init__(self, args):
         print("Server ... starting server and loading model ... please wait until its started ...")
 
-        self.settings = settings.Settings()
-        self.load_serverside_handler(args)
+        self.settings = settings.Settings(args)
+        self.load_serverside_handler()
 
         frequency_sec = 10.0
         if SERVER_VERBOSE > 0:
@@ -65,9 +65,9 @@ class Server(object):
             print("Memory:", mem)
             time.sleep(frequency_sec)  # check every frequency_sec sec
 
-    def load_serverside_handler(self, args):
+    def load_serverside_handler(self):
         global serverside_handler
-        serverside_handler = server_handler.ServerHandler(self.settings, args)
+        serverside_handler = server_handler.ServerHandler(self.settings)
         serverside_handler.VERBOSE = SERVER_VERBOSE
         print('Server handler loaded.')
 
@@ -173,16 +173,21 @@ def get_audio():
             t_load_model = timer() - t_load_model
             print("Loading took = ", t_load_model, "sec")
 
+        print(">>>>>>>>", current_model_i)
+
         if not serverside_handler.continue_impulse_from_previous_batch or (interactive_i != current_interactive_i):
             # Either change impulse every generation - or when it was changed
             print("Start with a new impulse:")
             serverside_handler.change_impulse(interactive_i)
 
 
+        # hard code (for now) if we are using GriffLim or LWS for reconstruction
+        method = "Griff"
+        if current_model_i > 9: # HAX for 10 and 11
+            method = "LWS"
 
-        # Ps: probably nicer when solving this on the client side!
-        audio_arr, t_predict, t_reconstruct = serverside_handler.generate_audio_sample_WITHOUT_CROSSFADED_OVERLAP(requested_length, interactive_i)
-        #audio_arr, t_predict, t_reconstruct = serverside_handler.generate_audio_sample_OVERLAP(requested_length, interactive_i)
+        audio_arr, t_predict, t_reconstruct = serverside_handler.generate_audio_sample(requested_length, interactive_i, method)
+
 
         data["audio_response"] = audio_arr.tolist()
         data["time_predict"] = t_predict

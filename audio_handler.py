@@ -2,6 +2,7 @@
 import numpy as np
 import librosa
 import utils.audio_dataset_generator
+import lws
 
 class AudioHandler(object):
     """
@@ -22,9 +23,20 @@ class AudioHandler(object):
         self.sample_rate = sample_rate
         self.sequence_length = sequence_length
 
-    def spectrogram2audio(self, spectrogram):
-        audio = self.griffin_lim(spectrogram.T, self.griffin_iterations)
-        audio = np.array(audio)
+        # Init the LWS:
+        lws_L = 5
+        self.lws_processor = lws.lws(self.window_size, self.hop_size, L=lws_L, fftsize=self.fft_size, mode="music")
+
+
+    def spectrogram2audio(self, spectrogram, method="Griff"):
+        if method == "Griff":
+            audio = self.griffin_lim(spectrogram.T, self.griffin_iterations)
+            audio = np.array(audio)
+
+        elif method == "LWS":
+            audio = self.lws_reconstruct(spectrogram)
+            audio = np.array(audio)
+
 
         # sometimes gets error:
         #     if not np.isfinite(y).all():
@@ -55,6 +67,26 @@ class AudioHandler(object):
             stft_matrix = stftm_matrix * stft_matrix / np.abs(stft_matrix)
             y = librosa.core.istft(stft_matrix, self.hop_size, self.window_size)
         return y
+
+    def lws_reconstruct(self, data):
+        X0 = data
+        ## HAX, doesnt influence it too much tho
+        if X0.dtype != "float64":
+            X0 = np.asarray(X0, dtype=np.float64)
+
+        X1 = self.lws_processor.run_lws(X0)  # reconstruction from magnitude (in general, one can reconstruct from an initial complex spectrogram)
+        print('{:6}: {:5.2f} dB'.format('LWS', self.lws_processor.get_consistency(X1)))
+
+        represented = X1
+        # now reconstruct from:
+        print("\trepresented shape", represented.shape)
+
+        reconstruction = self.lws_processor.istft(represented)  # where x is a single-channel waveform
+        reconstruction = np.asarray(reconstruction)
+        print("\toutput reconstruction:", reconstruction.shape)  # (531968,)
+        print("\treconstruction data type:", reconstruction.dtype)
+
+        return reconstruction
 
     def load_dataset(self, dataset_path):
         dataset = utils.audio_dataset_generator.AudioDatasetGenerator(
