@@ -26,10 +26,24 @@ class ReportHandler(object):
         folder = args.folder
         model_paths = self.find_models(folder)
 
+
+        self.number_of_samples_per_model = 2
+        self.length_of_generated = 256
+
+
+        # HAX subset
+        model_paths = model_paths[0:3]
+
+        report_items = []
+
         for model_path in model_paths:
             new_graph = tf.Graph()
             with new_graph.as_default():
-                self.resurrect_model(folder, model_path)
+                report_item = self.resurrect_model(folder, model_path)
+
+                report_items.append(report_item)
+
+        self.html_page(report_items)
 
     def find_models(self, folder):
         onlyfiles = [f for f in listdir(folder) if isfile(join(folder, f))]
@@ -61,9 +75,14 @@ class ReportHandler(object):
         print("Loaded ", model_file, "successfully ...")
 
         # Save samples
-        self.sample(model_handler, dataset, name, n_samples=1)
+        paths_to_samples = self.sample(model_handler, dataset, name, n_samples=self.number_of_samples_per_model, requested_length=self.length_of_generated)
+
+        return self.report(model_file, audio_file, paths_to_samples, self.settings)
+
 
     def sample(self, model_handler, dataset, filename, n_samples = 5, requested_length = 1024):
+
+        paths_to_samples = []
 
         for i in range(n_samples):
             random_index = np.random.randint(0, (len(dataset.x_frames) - 1))
@@ -77,7 +96,54 @@ class ReportHandler(object):
             print("audio.shape", audio.shape)
 
             librosa.output.write_wav("reports/"+filename+"_sample_"+str(i)+".wav", audio, self.settings.sample_rate)
+            paths_to_samples.append("reports/"+filename+"_sample_"+str(i)+".wav")
 
+        return paths_to_samples
+
+    def report(self, model_name, original_sample, generated_samples, settings):
+        print("Reporting model", model_name)
+
+        string_builder = "<div><p class='model_name'>" + str(model_name) + "</p>\n"
+        #string_builder += "<p class='original_sample'>" + str(original_sample) + "</p>\n"
+
+        string_builder += "<p class='original_sample'>Original audio<br><audio controls><source src='" + str(
+            original_sample) + "' type='audio/wav'>Your browser does not support the audio element." + str(
+            original_sample) + "</audio></p>\n"
+
+        for i, sample in enumerate(generated_samples):
+
+            sample_local = sample[8:]
+            #string_builder += "<p class='sample'>" + str(sample) + "</p>\n"
+
+            # <audio controls>
+            #   <source src="horse.wav" type="audio/wav">
+            #   <source src="horse.mp3" type="audio/mpeg">
+            # Your browser does not support the audio element.
+            # </audio>
+
+            string_builder += "<p class='sample'>Generated sample "+str(i).zfill(2)+"<br><audio controls><source src='"+str(sample_local)+"' type='audio/wav'>Your browser does not support the audio element." + str(sample_local) + "</audio></p>\n"
+
+        string_builder += "</div>\n"
+
+        return string_builder
+
+
+    def html_page(self, items, report_name = "report.html"):
+
+        f = open('reports/'+report_name, 'w')
+
+        message = """<html>
+        <head><link rel="stylesheet" href="styles.css"></head>
+        <body><h1>Generated models:</h1>
+        """
+
+        for item in items:
+            message += item
+
+        message += "</body></html>"
+
+        f.write(message)
+        f.close()
 
 
 if __name__ == "__main__":
