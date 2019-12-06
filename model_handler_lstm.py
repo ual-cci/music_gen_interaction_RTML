@@ -62,7 +62,7 @@ class ModelHandlerLSTM(object):
 
     """
 
-    def __init__(self, number_rnn_layers, rnn_number_units):
+    def __init__(self, number_rnn_layers, rnn_number_units, settings = None):
         self.model = None
 
         # General Network
@@ -84,6 +84,10 @@ class ModelHandlerLSTM(object):
         self.use_cnn = False
         self.number_filters = [32]
         self.filter_sizes = [3]
+
+        if settings is not None:
+            self.amount_epochs = settings.amount_epochs
+            self.batch_size = settings.batch_size
 
         # auto init?
         #self.model = create_model()

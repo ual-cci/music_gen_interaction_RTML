@@ -33,6 +33,19 @@ class AudioDatasetGenerator:
         self.sample_rate = sample_rate
         self.is_shuffled = False
 
+    def load_from_wav_noSave(self, data_path, force_recalc=False, prevent_shuffling=False):
+        if os.path.exists(data_path):
+            self._generate_data(data_path)
+            self.x_frames = np.array(self.x_frames)
+            self.y_frames = np.array(self.y_frames)
+
+            if not prevent_shuffling:
+                self.is_shuffled = True
+                self.x_frames, self.y_frames = self.unison_shuffled_copies(self.x_frames,
+                                                                           self.y_frames)
+        else:
+            raise ValueError("Couldn't load files from the supplied path.")
+
     def load(self, data_path, force_recalc=False, prevent_shuffling=False):
         """Loads the dataset from either the binary numpy file, or generates
         from a folder of wav files specified at the data_path."""
@@ -190,22 +203,27 @@ class AudioDatasetGenerator:
     def _generate_data(self, data_path):
         """Create some data from a folder of wav files.
         NOTE: the augmentation process should be parameterised."""
-        file_names = os.listdir(data_path)
+
+        if data_path[-4:] == ".wav": # one file
+            file_names = [data_path]
+        else: # folder
+            file_names = os.listdir(data_path)
+            file_names = [os.path.join(data_path, f) for f in file_names if f.endswith('.wav')]
+
+
         fft_frames = []
         self.x_frames = []
         self.y_frames = []
         for file in file_names:
-            if file.endswith('.wav'):
-                file = os.path.join(data_path, file)
-                data, sample_rate = librosa.load(file, sr=self.sample_rate,
-                                                 mono=True)
-                data = np.append(np.zeros(self.window_size * self.sequence_length), data)
-                mags_phases = librosa.stft(data, n_fft=self.fft_size,
-                                           win_length=self.window_size,
-                                           hop_length=self.hop_size)
-                magnitudes, phases = librosa.magphase(mags_phases)
-                for magnitude_bins in magnitudes.T:
-                    fft_frames += [magnitude_bins]
+            data, sample_rate = librosa.load(file, sr=self.sample_rate,
+                                             mono=True)
+            data = np.append(np.zeros(self.window_size * self.sequence_length), data)
+            mags_phases = librosa.stft(data, n_fft=self.fft_size,
+                                       win_length=self.window_size,
+                                       hop_length=self.hop_size)
+            magnitudes, phases = librosa.magphase(mags_phases)
+            for magnitude_bins in magnitudes.T:
+                fft_frames += [magnitude_bins]
 
         start = 0
         end = len(fft_frames) - self.sequence_length - 1

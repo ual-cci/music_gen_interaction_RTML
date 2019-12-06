@@ -20,11 +20,6 @@ class ServerHandler(object):
         settings.print_settings()
         self.settings = settings
 
-        lstm_layers = int(settings.lstm_layers)
-        lstm_units = int(settings.lstm_units)
-        griffin_iterations = int(settings.griffin_iterations)
-        sample_rate = int(settings.sample_rate)
-
         self.keep_only_newly_generated = True
         self.continue_impulse_from_previous_batch = True
         self.previous_audio_overlap = None
@@ -33,8 +28,10 @@ class ServerHandler(object):
         self.song_i = 0
         self.interactive_i = 0
 
-        self.audio_handler = audio_handler.AudioHandler(griffin_iterations=griffin_iterations, sample_rate=sample_rate)
-        self.model_handler = model_handler_lstm.ModelHandlerLSTM(lstm_layers, lstm_units)
+        self.audio_handler = audio_handler.AudioHandler(griffin_iterations=settings.griffin_iterations, sample_rate=settings.sample_rate,
+                                                        fft_size=settings.fft_size, window_size=settings.window_size,
+                                                        hop_size=settings.hop_size, sequence_length=settings.sequence_length)
+        self.model_handler = model_handler_lstm.ModelHandlerLSTM(settings.lstm_layers, settings.lstm_units)
 
         # Create a model
         self.model_handler.create_model()
