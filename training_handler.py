@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import audio_handler
 import librosa
+from dataset_handler import Dataset
 
 class TrainingMonitorCallback(tflearn.callbacks.Callback):
     def __init__(self, record):
@@ -54,7 +55,7 @@ class TrainingHandler(object):
         #plt.show()
         plt.close()
 
-    def sample(self, model_handler, dataset, filename, n_samples = 5):
+    def sample(self, model_handler, dataset, filename, n_samples = 5, requested_length = 1024):
 
         for i in range(n_samples):
             random_index = np.random.randint(0, (len(dataset.x_frames) - 1))
@@ -62,7 +63,7 @@ class TrainingHandler(object):
 
             input_impulse = np.array(dataset.x_frames[random_index])
 
-            predicted_spectrogram, _ = model_handler.generate_sample(input_impulse, requested_length = 1024, window_size=1024)
+            predicted_spectrogram, _ = model_handler.generate_sample(input_impulse, requested_length = requested_length, window_size=1024)
 
             audio = self.audio_handler.spectrogram2audio(predicted_spectrogram)
             print("audio.shape", audio.shape)
@@ -73,7 +74,8 @@ class TrainingHandler(object):
         # keep this in debug record
         self.settings.debug_file = music_file
 
-        dataset = self.make_dataset(music_file)
+        dataset_handler = Dataset(self.settings)
+        dataset, self.audio_handler = dataset_handler.make_dataset(music_file)
         print("Loaded dataset.")
 
         model_handler = model_handler_lstm.ModelHandlerLSTM(self.settings.lstm_layers, self.settings.lstm_units, self.settings)
@@ -125,23 +127,6 @@ class TrainingHandler(object):
         del model_handler.model
         del model_handler
         del self.audio_handler
-
-
-
-    def make_dataset(self, music_file):
-        self.audio_handler = audio_handler.AudioHandler(griffin_iterations=self.settings.griffin_iterations, sample_rate=self.settings.sample_rate,
-                                                        fft_size=self.settings.fft_size, window_size=self.settings.window_size,
-                                                        hop_size=self.settings.hop_size, sequence_length=self.settings.sequence_length)
-
-        dataset = utils.audio_dataset_generator.AudioDatasetGenerator(
-            fft_size = self.settings.fft_size, window_size = self.settings.window_size, hop_size = self.settings.hop_size,
-            sequence_length = self.settings.sequence_length, sample_rate = self.settings.sample_rate)
-
-        dataset.load_from_wav_noSave(music_file, prevent_shuffling=False)
-
-        print("Dataset:", dataset.x_frames.shape, dataset.y_frames.shape)
-        return dataset
-
 
     def demo(self):
 
