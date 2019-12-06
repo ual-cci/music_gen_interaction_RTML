@@ -147,9 +147,11 @@ class TrainingHandler(object):
         ]
 
 
-        for music_file in music_files:
+        for music_i, music_file in enumerate(music_files):
             audio_tag = music_file.split("/")[-1].replace(".", "_")
             model_name = "trained_models/Model_" + audio_tag
+
+            print("[[[[ Training on music", music_i, "/", len(music_files), ":", music_file)
 
             new_graph = tf.Graph()
             with new_graph.as_default():

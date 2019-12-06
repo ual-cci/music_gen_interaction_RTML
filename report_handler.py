@@ -27,16 +27,18 @@ class ReportHandler(object):
         model_paths = self.find_models(folder)
 
 
-        self.number_of_samples_per_model = 2
-        self.length_of_generated = 256
+        self.number_of_samples_per_model = 3
+        self.length_of_generated = 1024 # 1024 is roughly 24 sec at 22khz
 
 
         # HAX subset
-        model_paths = model_paths[0:3]
+        #model_paths = model_paths[0:6]
 
         report_items = []
 
-        for model_path in model_paths:
+        for model_i, model_path in enumerate(model_paths):
+            print("[[[[ Reporting model", model_i, "/", len(model_paths), ":", model_path)
+
             new_graph = tf.Graph()
             with new_graph.as_default():
                 report_item = self.resurrect_model(folder, model_path)

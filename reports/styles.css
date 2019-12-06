@@ -12,3 +12,13 @@ p {
 div {
     padding-bottom: 15px;
 }
+
+
+
+.model_name {
+    font-weight: bold;
+}
+
+.sample {
+    padding-left: 50px;
+}
