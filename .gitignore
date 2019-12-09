@@ -165,3 +165,10 @@ venv.bak/
 *.npy
 *.npz
 
+*.index
+*.meta
+*.settings
+*.data-00000-of-00001
+*.h5
+trained_models/*.png
+*.mp3
