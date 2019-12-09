@@ -68,6 +68,12 @@ class TrainingHandler(object):
             audio = self.audio_handler.spectrogram2audio(predicted_spectrogram)
             print("audio.shape", audio.shape)
 
+            if not np.isfinite(audio).all():
+                print("Problem with the signal - it's not finite (contains inf or NaN)")
+                print("Signal = ", audio)
+                audio = np.nan_to_num(audio)
+                print("Attempted hacky fix")
+
             librosa.output.write_wav(filename+"_sample_"+str(i)+".wav", audio, self.settings.sample_rate)
 
     def train_on_file(self, music_file, model_name = "trained_models/tmp"):
