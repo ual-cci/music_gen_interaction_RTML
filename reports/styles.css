@@ -14,7 +14,6 @@ div {
 }
 
 
-
 .model_name {
     font-weight: bold;
 }
@@ -22,3 +21,10 @@ div {
 .sample {
     padding-left: 50px;
 }
+
+.original_sample {
+    border-right: dashed 3px black;
+    padding-right: 45px;
+}
+
+.ui-state-highlight { height: 3.0em; line-height: 1.2em; background-color: lightyellow; }

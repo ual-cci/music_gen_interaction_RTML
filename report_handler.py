@@ -108,9 +108,13 @@ class ReportHandler(object):
         string_builder = "<div><p class='model_name'>" + str(model_name) + "</p>\n"
         #string_builder += "<p class='original_sample'>" + str(original_sample) + "</p>\n"
 
-        string_builder += "<p class='original_sample'>Original audio<br><audio controls><source src='" + str(
+
+        string_builder += "<table><tr>"
+
+        string_builder += "<td class='original_sample'>Original audio<br><audio controls><source src='" + str(
             original_sample) + "' type='audio/wav'>Your browser does not support the audio element." + str(
-            original_sample) + "</audio></p>\n"
+            original_sample) + "</audio></td>\n"
+
 
         for i, sample in enumerate(generated_samples):
 
@@ -123,8 +127,9 @@ class ReportHandler(object):
             # Your browser does not support the audio element.
             # </audio>
 
-            string_builder += "<p class='sample'>Generated sample "+str(i).zfill(2)+"<br><audio controls><source src='"+str(sample_local)+"' type='audio/wav'>Your browser does not support the audio element." + str(sample_local) + "</audio></p>\n"
+            string_builder += "<td class='sample'>Generated sample "+str(i).zfill(2)+"<br><audio controls><source src='"+str(sample_local)+"' type='audio/wav'>Your browser does not support the audio element." + str(sample_local) + "</audio></td>\n"
 
+        string_builder += "</tr></table>"
         string_builder += "</div>\n"
 
         return string_builder
@@ -135,14 +140,20 @@ class ReportHandler(object):
         f = open('reports/'+report_name, 'w')
 
         message = """<html>
-        <head><link rel="stylesheet" href="styles.css"></head>
+        <head>
+            <link rel="stylesheet" href="styles.css">
+            <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+            <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+            <script src="custom.js"></script>
+        </head>
         <body><h1>Generated models:</h1>
+        <div id='sortable'>
         """
 
         for item in items:
             message += item
 
-        message += "</body></html>"
+        message += "</div></body></html>"
 
         f.write(message)
         f.close()
@@ -159,4 +170,3 @@ if __name__ == "__main__":
 
     reporter = ReportHandler(args)
 
-    #reporter.demo_on_folder_of_files()
