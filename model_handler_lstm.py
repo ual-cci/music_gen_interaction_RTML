@@ -103,8 +103,7 @@ class ModelHandlerLSTM(object):
 
         self.model.load(path)
 
-    def create_model(self, sequence_length = 40):
-        #self.sequence_length = 45
+    def create_model(self):
         # x data (22983, 40, 1025)
         # y data (22983, 1025)
         self.input_shapes = (None, self.sequence_length, 1025)
@@ -177,6 +176,58 @@ class ModelHandlerLSTM(object):
         predicted_magnitudes = np.array(predicted_magnitudes).reshape(-1, window_size + 1)
 
         return predicted_magnitudes, next_generation_impulse
+
+    def generate_sample__whileInterpolating(self, input_impulse, target_impulses, _change_step, _change_steps, requested_length, window_size=1024):
+
+
+        dimension1 = self.input_shapes[1]
+        dimension2 = self.input_shapes[2]
+
+        next_generation_impulse = None
+
+        predicted_magnitudes = input_impulse
+        for j in range(requested_length):
+
+
+            shape = (1, dimension1, dimension2, 1) if self.use_cnn else (1, dimension1, dimension2)
+            prediction = self.model.predict(input_impulse.reshape(shape))
+
+            if self.use_cnn:
+                prediction = prediction.reshape(1, self.output_shapes[1], 1)
+
+            # add the last prediction to the predicted_magnitudes
+            predicted_magnitudes = np.vstack((predicted_magnitudes, prediction))
+            input_impulse = predicted_magnitudes[-self.sequence_length:]
+
+
+
+
+            # mix in?
+            #if (np.random.random_sample() < random_chance):
+            #    idx = np.random.randint(0, self.sequence_length)
+            #    input_impulse[idx] = input_impulse[idx] + np.random.random_sample(input_impulse[idx].shape) * random_strength
+
+            # Interpolation here
+            _change_step += 1
+            if _change_step < _change_steps:
+                print("We are on step", _change_step, "from", _change_steps)
+
+                # while it's smaller, we should change the impulse:
+                alpha = (_change_steps - (_change_step+1))/_change_steps # 0.0 with _change_step==0, 1.0 with _change_step==_change_steps
+
+                print("blending A=",input_impulse.shape, (alpha))
+                print("blending B=",target_impulses[_change_step].shape, 1.0-alpha)
+
+                input_impulse = input_impulse*(alpha) + target_impulses[_change_step]*(1.0-alpha)
+            else:
+                print("no longer changing, reached the transition")
+
+            next_generation_impulse = input_impulse
+
+
+        predicted_magnitudes = np.array(predicted_magnitudes).reshape(-1, window_size + 1)
+
+        return predicted_magnitudes, next_generation_impulse, _change_step, _change_steps
 
 # Example calls and outputs:
 """

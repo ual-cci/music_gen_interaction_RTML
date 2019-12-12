@@ -74,8 +74,9 @@ RECEIVED_FIRST_RESPONSE = False
 
 def process(frames):
     global RECEIVED_FIRST_RESPONSE
+    global previous
 
-    previous = np.zeros(blocksize, )
+
     if VERBOSE_queues_status:
         print("qout", qout.qsize(), "/", queuesize)
 
@@ -101,6 +102,7 @@ queuesize = 1000
 blocksize = 1024 # 256, 512 and 1024 are alright
 blocksize = 2048 # 256, 512 and 1024 are alright
 #blocksize = 2*2048 # 256, 512 and 1024 are alright
+previous = np.zeros(blocksize, )
 
 qout = queue.Queue(maxsize=queuesize)
 qin = queue.Queue(maxsize=queuesize)
@@ -121,6 +123,8 @@ SIGNAL_requested_lenght = 32 # lets start with small
 WAIT_if_qout_larger_div = 2
 
 VOLUME = 100
+
+SIGNAL_change_speed = 120
 
 
 WAIT_if_qout_larger_div = 1
@@ -163,6 +167,7 @@ class ClientMusic(object):
                    "interactive_i": str(SIGNAL_interactive_i),
                    "model_i": str(SIGNAL_model_i),
                    "song_i": str(SIGNAL_song_i),
+                   "change_speed": str(SIGNAL_change_speed),
                    }
 
         r = requests.post(self.Handshake_GETAUDIO_API_URL, files=payload).json()
@@ -255,6 +260,7 @@ class ClientMusic(object):
                 # v2 = Crossfade with a small number of samples - these will get lost (but if they are few enough, who cares!)
                 cross_len = 32
                 cross_len = 128
+                cross_len = 256
                 assert cross_len <= 1024
 
                 first_sample = last_bit[:-cross_len]
@@ -360,15 +366,17 @@ try:
         global SIGNAL_model_i
         global SIGNAL_song_i
         global SIGNAL_requested_lenght
+        global SIGNAL_change_speed
         global VOLUME
         print("OSC got values: {}".format(values))
         # [percentage, model_i, song_i]
-        percentage, model_i, song_i, requested_lenght, sent_volume = values
+        percentage, model_i, song_i, requested_lenght, change_speed, sent_volume = values
 
         SIGNAL_interactive_i = float(percentage)/1000.0 # 1000 = 100% = 1.0
         SIGNAL_model_i = int(model_i)
         SIGNAL_song_i = int(song_i)
         SIGNAL_requested_lenght = int(requested_lenght)
+        SIGNAL_change_speed = int(change_speed)
         VOLUME = int(sent_volume)
 
     print("Also starting a OSC listener at ",OSC_address,OSC_port,OSC_bind, "to listen for interactive signal (0-1000).")

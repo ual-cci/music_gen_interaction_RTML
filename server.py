@@ -115,10 +115,12 @@ def get_audio():
         DEFAULT_interactive_i = 0.0
         DEFAULT_model_i = 0
         DEFAULT_song_i = 0
+        DEFAULT_change_speed = 120
         requested_length = DEFAULT_lenght
         interactive_i = DEFAULT_interactive_i
         model_i = DEFAULT_model_i
         song_i = DEFAULT_song_i
+        change_speed = DEFAULT_change_speed
 
         if len(flask.request.files) and SERVER_VERBOSE > 1:
             print("Recieved flask.request.files = ",flask.request.files)
@@ -128,6 +130,7 @@ def get_audio():
             interactive_i = flask.request.files["interactive_i"].read()
             model_i = flask.request.files["model_i"].read()
             song_i = flask.request.files["song_i"].read()
+            change_speed = int(flask.request.files["change_speed"].read())
             if SERVER_VERBOSE > 1:
                 print("received: ",requested_length, interactive_i, model_i, song_i)
 
@@ -148,6 +151,9 @@ def get_audio():
         current_model_i = serverside_handler.model_i
         current_song_i = serverside_handler.song_i
         current_interactive_i = serverside_handler.interactive_i
+
+        if not serverside_handler._is_changing_impulses:
+            serverside_handler._change_steps = change_speed
 
         if SERVER_VERBOSE > 1:
             print("current_model_i=",current_model_i)
@@ -178,16 +184,23 @@ def get_audio():
         if not serverside_handler.continue_impulse_from_previous_batch or (interactive_i != current_interactive_i):
             # Either change impulse every generation - or when it was changed
             print("Start with a new impulse:")
-            serverside_handler.change_impulse(interactive_i)
 
+            if not serverside_handler.change_impulses_smoothly or serverside_handler.first_iteration or (serverside_handler._change_steps is 0):
+                serverside_handler.change_impulse(interactive_i)
+            else:
+                serverside_handler.change_impulse_smoothly_start(interactive_i)
 
         # hard code (for now) if we are using GriffLim or LWS for reconstruction
         method = "Griff"
-        if current_model_i > 9: # HAX for 10 and 11
+
+        #print("serverside_handler.songs_models[current_model_i]", serverside_handler.songs_models.model_paths[current_model_i], "_lws_" in serverside_handler.songs_models.model_paths[current_model_i])
+        #if current_model_i > 9: # HAX for 10 and 11
+        if "_lws_" in serverside_handler.songs_models.model_paths[current_model_i]:
             method = "LWS"
 
         audio_arr, t_predict, t_reconstruct = serverside_handler.generate_audio_sample(requested_length, interactive_i, method)
 
+        serverside_handler.first_iteration = False
 
         data["audio_response"] = audio_arr.tolist()
         data["time_predict"] = t_predict

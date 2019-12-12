@@ -4,6 +4,8 @@ import model_handler_lstm
 from utils import file_functions
 from timeit import default_timer as timer
 import cooked_files_handler
+import tensorflow as tf
+import tflearn
 
 class ServerHandler(object):
     """
@@ -20,9 +22,18 @@ class ServerHandler(object):
         settings.print_settings()
         self.settings = settings
 
+        self.first_iteration = True
+
         self.keep_only_newly_generated = True
         self.continue_impulse_from_previous_batch = True
         self.previous_audio_overlap = None
+
+        self.change_impulses_smoothly = True
+        #self.change_impulses_smoothly = False
+
+        self._is_changing_impulses = False
+        self._change_step = 0
+        self._change_steps = 120
 
         self.model_i = 0
         self.song_i = 0
@@ -32,6 +43,7 @@ class ServerHandler(object):
                                                         fft_size=settings.fft_size, window_size=settings.window_size,
                                                         hop_size=settings.hop_size, sequence_length=settings.sequence_length)
         self.model_handler = model_handler_lstm.ModelHandlerLSTM(settings.lstm_layers, settings.lstm_units, self.settings)
+
 
         # Create a model
         self.model_handler.create_model()
@@ -58,11 +70,38 @@ class ServerHandler(object):
     def load_weights(self, model_i):
         model_path = self.songs_models.model_paths[model_i]
         print("Loading ...", model_path.split("/")[-1])
-        # Load model weights
-        if file_functions.file_exists(model_path+".data-00000-of-00001"):
-            self.model_handler.load_model(model_path)
+
+        if "Model_" not in model_path:
+            print("Regular load")
+
+            # Load model weights
+            if file_functions.file_exists(model_path+".data-00000-of-00001"):
+                self.model_handler.load_model(model_path)
+            else:
+                print("[WARN!] No weights loaded in the model - it won't generate anything meaningful ...")
         else:
-            print("[WARN!] No weights loaded in the model - it won't generate anything meaningful ...")
+            print("Load with Graph")
+
+            new_graph = tf.Graph()
+            with new_graph.as_default():
+                self.model_handler.create_model()  # recreate?
+
+                # Load model weights
+                if file_functions.file_exists(model_path+".data-00000-of-00001"):
+                    self.model_handler.load_model(model_path)
+                else:
+                    print("[WARN!] No weights loaded in the model - it won't generate anything meaningful ...")
+
+            # Hacky Load Of Dataset, oh yeaaah
+            settings_file = model_path + ".settings"
+            from settings import Settings
+            tmp_settings = Settings()
+            tmp_settings.load_from_txt(settings_file)
+            audio_file = tmp_settings.debug_file
+            dataset = self.audio_handler.load_dataset(audio_file)
+
+            self.preloaded_impulses = dataset.x_frames
+            print("Loaded self.preloaded_impulses from dataset!")
 
         self.model_i = model_i
 
@@ -91,7 +130,6 @@ class ServerHandler(object):
         self.song_i = song_i
         print("Preloaded", len(self.preloaded_impulses), "impulse samples.")
 
-
     def change_impulse(self, interactive_i = 0.0):
         impulse_scale = 1.0
         # seed it with an old sample
@@ -105,6 +143,18 @@ class ServerHandler(object):
 
         self.interactive_i = interactive_i
 
+    def change_impulse_smoothly_start(self, interactive_i = 0.0):
+
+        # float interactive_i to int 0 - len(self.preloaded_impulses)
+        selected_index = int((len(self.preloaded_impulses) - self._change_steps) * interactive_i)
+        print("selected_index selected as", selected_index, "from interactive_i=", interactive_i)
+        new_impulses = np.array(self.preloaded_impulses[selected_index:selected_index+self._change_steps]) # shape = (40, 1025)
+        #print("new_impulses.shape:", new_impulses.shape)
+
+        self.target_impulses = new_impulses
+
+        self._is_changing_impulses = True
+        self.interactive_i = interactive_i
 
     def generate_audio_sample(self, requested_length, interactive_i=0.0, method="Griff"):
         #audio_chunk = np.random.rand(36352, )
@@ -119,8 +169,20 @@ class ServerHandler(object):
         impulse = self.impulse
 
         t_predict_start = timer()
-        predicted_spectrogram, last_impulse = self.model_handler.generate_sample(impulse, requested_length)
-        #print("predicted_spectrogram.shape", predicted_spectrogram.shape)
+
+        if self._is_changing_impulses and (self._change_steps is not 0):
+
+            predicted_spectrogram, last_impulse, self._change_step, self._change_steps = self.model_handler.generate_sample__whileInterpolating(impulse, self.target_impulses, self._change_step, self._change_steps, requested_length)
+
+            if self._change_step >= self._change_steps:
+                self._change_step = 0
+                self._is_changing_impulses = False # transition done
+                del self.target_impulses
+                print("change is over")
+
+        else:
+            predicted_spectrogram, last_impulse = self.model_handler.generate_sample(impulse, requested_length)
+            #print("predicted_spectrogram.shape", predicted_spectrogram.shape)
 
         self.impulse = last_impulse
 

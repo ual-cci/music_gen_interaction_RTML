@@ -71,10 +71,26 @@ class AudioDatasetGenerator:
                 self.is_shuffled = True
                 self.x_frames, self.y_frames = self.unison_shuffled_copies(self.x_frames,
                                                                            self.y_frames)
-            np.save(x_frames_name, self.x_frames)
-            np.save(y_frames_name, self.y_frames)
+
+            #print("NOW SAVING SO ITS FASTER THE NEXT TIME!")
+            #np.save(x_frames_name, self.x_frames)
+            #np.save(y_frames_name, self.y_frames)
         else:
             raise ValueError("Couldn't load files from the supplied path.")
+
+    """
+    def save_xy_frames(self, data_path, prevent_shuffling=False):
+
+        # .npy name
+        npy_filename = "_frames.npy"
+        if prevent_shuffling:
+            npy_filename = "_frames_NotShuffled.npy"
+
+        x_frames_name = os.path.join(data_path, "x"+npy_filename)
+        y_frames_name = os.path.join(data_path, "y"+npy_filename)
+        np.save(x_frames_name, self.x_frames)
+        np.save(y_frames_name, self.y_frames)
+    """
 
     def get_next_batch(self, batch_size):
         """Gets a new batch. Reshuffles the dataset at the end of the epoch."""
