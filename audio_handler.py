@@ -43,6 +43,12 @@ class AudioHandler(object):
         #         raise ParameterError('Audio buffer is not finite everywhere')
         # isfinite() -> Test element-wise for finiteness (not infinity or not Not a Number).
 
+        if not np.isfinite(audio).all():
+            print("Problem with the signal - it's not finite (contains inf or NaN)")
+            print("Signal = ", audio)
+            audio = np.nan_to_num(audio)
+            print("Attempted hacky fix")
+
         return audio
 
     def griffin_lim(self, stftm_matrix, max_iter=100):

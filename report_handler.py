@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import audio_handler
 import librosa
+import librosa.display
 from os import listdir
 from os.path import isfile, join
 from dataset_handler import Dataset
@@ -27,12 +28,15 @@ class ReportHandler(object):
         model_paths = self.find_models(folder)
 
 
-        self.number_of_samples_per_model = 3
+        self.number_of_samples_per_model = 5
         self.length_of_generated = 1024 # 1024 is roughly 24 sec at 22khz
 
 
+
         # HAX subset
-        #model_paths = model_paths[0:6]
+        #model_paths = model_paths[0:4]
+        #self.length_of_generated = 128
+
 
         report_items = []
 
@@ -77,14 +81,34 @@ class ReportHandler(object):
         print("Loaded ", model_file, "successfully ...")
 
         # Save samples
-        paths_to_samples = self.sample(model_handler, dataset, name, n_samples=self.number_of_samples_per_model, requested_length=self.length_of_generated)
+        paths_to_samples, samples_audio = self.sample(model_handler, dataset, name, n_samples=self.number_of_samples_per_model, requested_length=self.length_of_generated)
+
+        length_override = len(samples_audio[0])
+        self.audiofile_as_spectrogram(filename = "reports/"+name+"_orig.png", audio_file=audio_file, length_override = length_override)
 
         return self.report(model_file, audio_file, paths_to_samples, self.settings)
 
 
+    def audiofile_as_spectrogram(self, filename, audio_file, length_override = None):
+        audio, sr = librosa.load(audio_file, sr=self.settings.sample_rate)
+        if length_override is not None:
+            audio = audio[0:length_override]
+            print("(debug) Original audio has", len(audio), "samples")
+        self.save_audio_as_spectrogram(filename, audio)
+
+    def save_audio_as_spectrogram(self, filename, audio):
+        plt.figure()
+        D = librosa.amplitude_to_db(np.abs(librosa.stft(audio)), ref=np.max)
+        librosa.display.specshow(D, y_axis='log')
+        plt.colorbar(format='%+2.0f dB')
+        plt.title('Log-frequency power spectrogram')
+        plt.savefig(filename)
+        plt.close()
+
     def sample(self, model_handler, dataset, filename, n_samples = 5, requested_length = 1024):
 
         paths_to_samples = []
+        samples_audio = []
 
         for i in range(n_samples):
             random_index = np.random.randint(0, (len(dataset.x_frames) - 1))
@@ -96,11 +120,14 @@ class ReportHandler(object):
 
             audio = self.audio_handler.spectrogram2audio(predicted_spectrogram)
             print("audio.shape", audio.shape)
+            samples_audio.append(audio)
+
+            self.save_audio_as_spectrogram("reports/" + filename + "_sample_" + str(i) + ".png", audio)
 
             librosa.output.write_wav("reports/"+filename+"_sample_"+str(i)+".wav", audio, self.settings.sample_rate)
             paths_to_samples.append("reports/"+filename+"_sample_"+str(i)+".wav")
 
-        return paths_to_samples
+        return paths_to_samples, samples_audio
 
     def report(self, model_name, original_sample, generated_samples, settings):
         print("Reporting model", model_name)
@@ -108,10 +135,12 @@ class ReportHandler(object):
         string_builder = "<div><p class='model_name'>" + str(model_name) + "</p>\n"
         #string_builder += "<p class='original_sample'>" + str(original_sample) + "</p>\n"
 
+        orig_spect_name = generated_samples[0][8:] + "_orig.png"
+        orig_spect_name = orig_spect_name.replace("_sample_0.wav", "")
 
         string_builder += "<table><tr>"
 
-        string_builder += "<td class='original_sample'>Original audio<br><audio controls><source src='" + str(
+        string_builder += "<td class='original_sample'><span>Original audio<img src='"+str(orig_spect_name)+"' class='image'></span><br><audio controls><source src='" + str(
             original_sample) + "' type='audio/wav'>Your browser does not support the audio element." + str(
             original_sample) + "</audio></td>\n"
 
@@ -119,6 +148,7 @@ class ReportHandler(object):
         for i, sample in enumerate(generated_samples):
 
             sample_local = sample[8:]
+            sample_local_spec = sample_local[0:-4] + ".png"
             #string_builder += "<p class='sample'>" + str(sample) + "</p>\n"
 
             # <audio controls>
@@ -127,7 +157,10 @@ class ReportHandler(object):
             # Your browser does not support the audio element.
             # </audio>
 
-            string_builder += "<td class='sample'>Generated sample "+str(i).zfill(2)+"<br><audio controls><source src='"+str(sample_local)+"' type='audio/wav'>Your browser does not support the audio element." + str(sample_local) + "</audio></td>\n"
+            # ><span>Generated sample 01 <img src='Model_hotline-miami-soundtrack-hydrogen-by-moon_mp3_wav3x128_sample22khz_griff60__train300epX64bt__sample_0.png' class='image'>
+            # </span>
+
+            string_builder += "<td class='sample'><span>Generated sample "+str(i).zfill(2)+"<img src='"+str(sample_local_spec)+"' class='image'></span><br><audio controls><source src='"+str(sample_local)+"' type='audio/wav'>Your browser does not support the audio element." + str(sample_local) + "</audio></td>\n"
 
         string_builder += "</tr></table>"
         string_builder += "</div>\n"
@@ -146,7 +179,7 @@ class ReportHandler(object):
             <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
             <script src="custom.js"></script>
         </head>
-        <body><h1>Generated models:</h1>
+        <body><h1>Generated models: <span>[+]</span></h1>
         <div id='sortable'>
         """
 
