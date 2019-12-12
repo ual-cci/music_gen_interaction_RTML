@@ -16,11 +16,12 @@ class OSCSender(object):
         self.model_i = cv2.getTrackbarPos('Model', 'InteractiveMusicGeneration')
         self.song_i = cv2.getTrackbarPos('Song as seed', 'InteractiveMusicGeneration')
         self.requested_lenght = cv2.getTrackbarPos('Length', 'InteractiveMusicGeneration')
+        self.volume = cv2.getTrackbarPos('Volume', 'InteractiveMusicGeneration')
 
         self.update_text()
 
-        print("Sending message=", [self.percentage, self.model_i, self.song_i, self.requested_lenght])
-        self.osc.send_message(b'/send_i', [self.percentage, self.model_i, self.song_i, self.requested_lenght])
+        print("Sending message=", [self.percentage, self.model_i, self.song_i, self.requested_lenght, self.volume])
+        self.osc.send_message(b'/send_i', [self.percentage, self.model_i, self.song_i, self.requested_lenght, self.volume])
 
     def update_text(self):
         names = self.songs_models.names_for_debug
@@ -67,6 +68,7 @@ class OSCSender(object):
         cv2.createTrackbar('Song as seed', 'InteractiveMusicGeneration', 0, len(self.songs_models.song_paths)-1, self.onChangeSend)
         #cv2.createTrackbar('Length', 'InteractiveMusicGeneration', 32, 64, self.onChangeSend)
         cv2.createTrackbar('Length', 'InteractiveMusicGeneration', 32, 1024, self.onChangeSend)
+        cv2.createTrackbar('Volume', 'InteractiveMusicGeneration', 100, 300, self.onChangeSend)
 
         self.onChangeSend(x=None) # toggle once at start
 

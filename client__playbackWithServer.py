@@ -91,6 +91,9 @@ def process(frames):
         #print("data =", data)
         #print("data", data.shape, data)
 
+        # volume
+        data = (float(VOLUME) / 100.0) * data
+
         client.outports[0].get_array()[:] = data
 
 # Use queues to pass data to/from the audio backend
@@ -116,6 +119,8 @@ SIGNAL_song_i = 0
 
 SIGNAL_requested_lenght = 32 # lets start with small
 WAIT_if_qout_larger_div = 2
+
+VOLUME = 100
 
 
 WAIT_if_qout_larger_div = 1
@@ -222,7 +227,6 @@ class ClientMusic(object):
                 time.sleep(3.1) # < what if it takes long time??? => Then it's choppy!
 
             audio_response = self.audio_from_server(SIGNAL_requested_lenght)
-
 
 
             # Resample:
@@ -356,14 +360,16 @@ try:
         global SIGNAL_model_i
         global SIGNAL_song_i
         global SIGNAL_requested_lenght
+        global VOLUME
         print("OSC got values: {}".format(values))
         # [percentage, model_i, song_i]
-        percentage, model_i, song_i, requested_lenght = values
+        percentage, model_i, song_i, requested_lenght, sent_volume = values
 
         SIGNAL_interactive_i = float(percentage)/1000.0 # 1000 = 100% = 1.0
         SIGNAL_model_i = int(model_i)
         SIGNAL_song_i = int(song_i)
         SIGNAL_requested_lenght = int(requested_lenght)
+        VOLUME = int(sent_volume)
 
     print("Also starting a OSC listener at ",OSC_address,OSC_port,OSC_bind, "to listen for interactive signal (0-1000).")
     osc = OSCThreadServer()
