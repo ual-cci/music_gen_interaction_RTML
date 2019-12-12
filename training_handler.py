@@ -96,6 +96,7 @@ class TrainingHandler(object):
         model_name = model_name + "griff" + str(self.settings.griffin_iterations) + "_"
         model_name = model_name + "_"
         model_name = model_name + "train" + str(self.settings.amount_epochs) + "epX" + str(self.settings.batch_size) + "bt_"
+        model_name = model_name + "_" + str(self.settings.sequence_length)+"seq"
 
         print("Model = |", model_name, "|")
 
@@ -170,6 +171,7 @@ if __name__ == "__main__":
     parser.add_argument('-amount_epochs', help='amount_epochs', default='300')
     parser.add_argument('-batch_size', help='batch_size', default='64')
 
+    parser.add_argument('-sequence_length', help='sequence_length', default='40')
     args = parser.parse_args()
     args.sample_rate = '22050'
 

@@ -88,6 +88,7 @@ class ModelHandlerLSTM(object):
         if settings is not None:
             self.amount_epochs = settings.amount_epochs
             self.batch_size = settings.batch_size
+            self.sequence_length = settings.sequence_length
 
         # auto init?
         #self.model = create_model()
@@ -103,7 +104,6 @@ class ModelHandlerLSTM(object):
         self.model.load(path)
 
     def create_model(self, sequence_length = 40):
-        self.sequence_length = sequence_length
         #self.sequence_length = 45
         # x data (22983, 40, 1025)
         # y data (22983, 1025)

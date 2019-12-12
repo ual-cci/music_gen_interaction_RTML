@@ -71,8 +71,7 @@ class ReportHandler(object):
         dataset, self.audio_handler = dataset_handler.make_dataset(audio_file)
         print("Loaded dataset.")
 
-        model_handler = model_handler_lstm.ModelHandlerLSTM(self.settings.lstm_layers, self.settings.lstm_units,
-                                                            self.settings)
+        model_handler = model_handler_lstm.ModelHandlerLSTM(self.settings.lstm_layers, self.settings.lstm_units,self.settings)
         model_handler.create_model()
         print("Created model.")
 

@@ -31,7 +31,7 @@ class ServerHandler(object):
         self.audio_handler = audio_handler.AudioHandler(griffin_iterations=settings.griffin_iterations, sample_rate=settings.sample_rate,
                                                         fft_size=settings.fft_size, window_size=settings.window_size,
                                                         hop_size=settings.hop_size, sequence_length=settings.sequence_length)
-        self.model_handler = model_handler_lstm.ModelHandlerLSTM(settings.lstm_layers, settings.lstm_units)
+        self.model_handler = model_handler_lstm.ModelHandlerLSTM(settings.lstm_layers, settings.lstm_units, self.settings)
 
         # Create a model
         self.model_handler.create_model()

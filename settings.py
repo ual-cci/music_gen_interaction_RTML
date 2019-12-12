@@ -26,12 +26,17 @@ class Settings(object):
             self.fft_size = 2048
             self.window_size = 1024
             self.hop_size = 512
-            self.sequence_length = 40
-
+            self.sequence_length = int(args.sequence_length)
 
             # training specific
-            self.amount_epochs = int(args.amount_epochs)
-            self.batch_size = int(args.batch_size)
+            if 'amount_epochs' in args:
+                self.amount_epochs = int(args.amount_epochs)
+            else:
+                self.amount_epochs = 300
+            if 'batch_size' in args:
+                self.batch_size = int(args.batch_size)
+            else:
+                self.batch_size = 64
         else:
             self.lstm_layers = None
             self.lstm_units = None
