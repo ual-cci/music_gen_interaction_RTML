@@ -83,7 +83,10 @@ def process(frames):
     if qout.empty():
         if RECEIVED_FIRST_RESPONSE: # don't bug the user ...
             print("empty, waiting with nothing!")
-        client.outports[0].get_array()[:] = previous
+
+        empty = np.zeros(blocksize, )
+
+        client.outports[0].get_array()[:] = empty # maybe that's better?
     else:
 
         #print("we have smth")
