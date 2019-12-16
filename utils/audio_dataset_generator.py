@@ -33,6 +33,9 @@ class AudioDatasetGenerator:
         self.sample_rate = sample_rate
         self.is_shuffled = False
 
+        # Save the dataset files directly? This will make it easier to reload, however also occupy a lot of space
+        self.bake_npy_files = True
+
     def load_from_wav_noSave(self, data_path, force_recalc=False, prevent_shuffling=False):
         if os.path.exists(data_path):
             self._generate_data(data_path)
@@ -55,8 +58,13 @@ class AudioDatasetGenerator:
         if prevent_shuffling:
             npy_filename = "_frames_NotShuffled.npy"
 
-        x_frames_name = os.path.join(data_path, "x"+npy_filename)
-        y_frames_name = os.path.join(data_path, "y"+npy_filename)
+        just_folder = "/".join(data_path.split("/")[0:-2])
+        just_file = data_path.split("/")[-1]
+        just_file = just_file.replace(".wav","")
+
+        x_frames_name = just_folder+"/baked_files/"+just_file + "__x"+npy_filename
+        y_frames_name = just_folder+"/baked_files/"+just_file + "__y"+npy_filename
+
 
         if os.path.isfile(x_frames_name) and os.path.isfile(y_frames_name) and force_recalc == False:
             self.x_frames = np.load(x_frames_name)
@@ -72,9 +80,14 @@ class AudioDatasetGenerator:
                 self.x_frames, self.y_frames = self.unison_shuffled_copies(self.x_frames,
                                                                            self.y_frames)
 
-            #print("NOW SAVING SO ITS FASTER THE NEXT TIME!")
-            #np.save(x_frames_name, self.x_frames)
-            #np.save(y_frames_name, self.y_frames)
+
+            if self.bake_npy_files:
+                if not os.path.exists(just_folder+"/baked_files/"):
+                    os.makedirs(just_folder+"/baked_files/")
+
+                print("Saving the frames into files -> ", x_frames_name)
+                np.save(x_frames_name, self.x_frames)
+                np.save(y_frames_name, self.y_frames)
         else:
             raise ValueError("Couldn't load files from the supplied path.")
 
