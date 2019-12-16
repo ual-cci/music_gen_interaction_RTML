@@ -57,3 +57,6 @@ parser.add_argument('-griffin_iterations', help='iterations to use in griffin re
 Video with the "proto"-UI: https://www.youtube.com/watch?v=w7Sk7RTVs9U
 
 Audio recording: https://soundcloud.com/previtus/ml-jazz-meanderings-ml-generated-sounds-1/s-DCZbx
+
+
+[![Interactive Music Generation (10-2019)](https://raw.githubusercontent.com/ual-cci/music_gen_interaction_RTML/master/_illustration_img.png?token=AAIV2RWR3M4IZCAGLU5RQQ26AD72E)](https://www.youtube.com/watch?v=w7Sk7RTVs9U "Interactive Music Generation (10-2019)")
