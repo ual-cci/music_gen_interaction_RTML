@@ -51,3 +51,9 @@ cross_len = 32 # shorter client side crossfasing (might cause more audible click
 parser.add_argument('-griffin_iterations', help='iterations to use in griffin reconstruction', default='10') 
 # this one is the hardest hit I guess, still sounds reasonable though
 ```
+
+## Demo
+
+Video with the "proto"-UI: https://www.youtube.com/watch?v=w7Sk7RTVs9U
+
+Audio recording: https://soundcloud.com/previtus/ml-jazz-meanderings-ml-generated-sounds-1/s-DCZbx
