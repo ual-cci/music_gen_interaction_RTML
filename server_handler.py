@@ -43,10 +43,12 @@ class ServerHandler(object):
                                                         fft_size=settings.fft_size, window_size=settings.window_size,
                                                         hop_size=settings.hop_size, sequence_length=settings.sequence_length)
         self.model_handler = model_handler_lstm.ModelHandlerLSTM(settings.lstm_layers, settings.lstm_units, self.settings)
-
+        self.graph = tf.Graph()
+        with self.graph.as_default():
+            self.model_handler.create_model()  # recreate?
 
         # Create a model
-        self.model_handler.create_model()
+        #self.model_handler.create_model()
         print("Created model:", self.model_handler.model)
 
         self.songs_models = cooked_files_handler.CookedFilesHandler(settings)
@@ -73,6 +75,7 @@ class ServerHandler(object):
 
         if "Model_" not in model_path:
             print("Regular load")
+            self.model_handler.create_model()
 
             # Load model weights
             if file_functions.file_exists(model_path+".data-00000-of-00001"):
@@ -82,9 +85,9 @@ class ServerHandler(object):
         else:
             print("Load with Graph")
 
-            new_graph = tf.Graph()
-            with new_graph.as_default():
-                self.model_handler.create_model()  # recreate?
+            #new_graph = tf.Graph()
+            with self.graph.as_default():
+                #self.model_handler.create_model()  # recreate?
 
                 # Load model weights
                 if file_functions.file_exists(model_path+".data-00000-of-00001"):
