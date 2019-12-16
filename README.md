@@ -60,3 +60,5 @@ Audio recording: https://soundcloud.com/previtus/ml-jazz-meanderings-ml-generate
 
 
 [![Interactive Music Generation (10-2019)](https://raw.githubusercontent.com/ual-cci/music_gen_interaction_RTML/master/_illustration_img.png?token=AAIV2RWR3M4IZCAGLU5RQQ26AD72E)](https://www.youtube.com/watch?v=w7Sk7RTVs9U "Interactive Music Generation (10-2019)")
+
+More demos at: https://ual-cci.github.io/vitek/ml_gen_music/report_griff_lim.html?version=61bf4b0 (Full page of generated samples with spectrograms!)
