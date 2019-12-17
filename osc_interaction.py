@@ -14,20 +14,20 @@ class OSCSender(object):
 
         self.percentage = cv2.getTrackbarPos('Percentage', 'InteractiveMusicGeneration')
         self.model_i = cv2.getTrackbarPos('Model', 'InteractiveMusicGeneration')
-        self.song_i = cv2.getTrackbarPos('Song as seed', 'InteractiveMusicGeneration')
+        #self.song_i = cv2.getTrackbarPos('Song as seed', 'InteractiveMusicGeneration')
         self.requested_lenght = cv2.getTrackbarPos('Length', 'InteractiveMusicGeneration')
         self.change_speed = cv2.getTrackbarPos('Change speed', 'InteractiveMusicGeneration')
         self.volume = cv2.getTrackbarPos('Volume', 'InteractiveMusicGeneration')
 
         self.update_text()
 
-        print("Sending message=", [self.percentage, self.model_i, self.song_i, self.requested_lenght, self.change_speed, self.volume])
-        self.osc.send_message(b'/send_i', [self.percentage, self.model_i, self.song_i, self.requested_lenght, self.change_speed, self.volume])
+        print("Sending message=", [self.percentage, self.model_i, 0, self.requested_lenght, self.change_speed, self.volume])
+        self.osc.send_message(b'/send_i', [self.percentage, self.model_i, 0, self.requested_lenght, self.change_speed, self.volume])
 
     def update_text(self):
         names = self.songs_models.names_for_debug
 
-        self.text = "MODEL="+str(names[self.model_i])+", "+"SONG="+str(names[self.song_i])
+        self.text = ""+str(names[self.model_i]) #", "+"SONG="+str(names[self.song_i])
 
 
     def __init__(self):
@@ -66,7 +66,7 @@ class OSCSender(object):
         # create trackbars for color change
         cv2.createTrackbar('Percentage', 'InteractiveMusicGeneration', 200, 1000, self.onChangeSend)
         cv2.createTrackbar('Model', 'InteractiveMusicGeneration', 0, len(self.songs_models.model_paths)-1, self.onChangeSend)
-        cv2.createTrackbar('Song as seed', 'InteractiveMusicGeneration', 0, len(self.songs_models.song_paths)-1, self.onChangeSend)
+        #cv2.createTrackbar('Song as seed', 'InteractiveMusicGeneration', 0, len(self.songs_models.song_paths)-1, self.onChangeSend)
         #cv2.createTrackbar('Length', 'InteractiveMusicGeneration', 32, 64, self.onChangeSend)
         cv2.createTrackbar('Length', 'InteractiveMusicGeneration', 32, 1024, self.onChangeSend)
         cv2.createTrackbar('Change speed', 'InteractiveMusicGeneration', 80, 200, self.onChangeSend)

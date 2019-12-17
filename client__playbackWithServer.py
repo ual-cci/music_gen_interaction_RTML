@@ -76,6 +76,9 @@ def process(frames):
     global RECEIVED_FIRST_RESPONSE
     global previous
 
+    global RECORDING
+    global RECORDED_audio
+
 
     if VERBOSE_queues_status:
         print("qout", qout.qsize(), "/", queuesize)
@@ -94,6 +97,13 @@ def process(frames):
         previous = data
         #print("data =", data)
         #print("data", data.shape, data)
+
+        # saving here as well:
+        if RECORDING:
+            if RECORDED_audio is None:
+                RECORDED_audio = [data]
+            else:
+                RECORDED_audio.append(data)
 
         # volume
         data = (float(VOLUME) / 100.0) * data
@@ -116,6 +126,7 @@ CLIENT_sample_rate = 22050
 OSC_address = '0.0.0.0'
 OSC_port = 8008
 OSC_bind = b'/send_i'
+OSC_record = b'/record'
 
 # global SIGNAL_interactive_i
 SIGNAL_interactive_i = 0.2
@@ -128,6 +139,9 @@ WAIT_if_qout_larger_div = 2
 VOLUME = 100
 
 SIGNAL_change_speed = 120
+
+RECORDING = False
+RECORDED_audio = None
 
 
 WAIT_if_qout_larger_div = 1
@@ -382,10 +396,43 @@ try:
         SIGNAL_change_speed = int(change_speed)
         VOLUME = int(sent_volume)
 
+    def recording(*values):
+        global RECORDING
+        global RECORDED_audio
+
+        print("RECORDING: {}".format(values))
+        toggle_value, file_name = values
+        toggle_value = int(toggle_value)
+        file_name = str(file_name.decode())
+
+        #print(toggle_value, file_name)
+
+        if toggle_value == 0:
+            print("START RECORDING")
+            RECORDING = True
+            RECORDED_audio = None
+
+        elif toggle_value == 1:
+            print("STOP AND SAVE INTO:", file_name)
+            RECORDING = False
+
+            print("RECORDED_audio.shape", np.asarray(RECORDED_audio).shape)
+            # RECORDED_audio.shape (76, 2048)
+            audio_total = np.asarray(RECORDED_audio).flatten()
+            print("audio_total.shape", np.asarray(audio_total).shape)
+            save_audio_debug(file_name, audio_total, sample_rate=44100) # save in 44.1
+
+            # save
+            RECORDED_audio = None
+
+
+
     print("Also starting a OSC listener at ",OSC_address,OSC_port,OSC_bind, "to listen for interactive signal (0-1000).")
     osc = OSCThreadServer()
     sock = osc.listen(address=OSC_address, port=OSC_port, default=True)
     osc.bind(OSC_bind, callback)
+    osc.bind(OSC_record, recording)
+
     #sleep(1000)
     # at the end?
 
