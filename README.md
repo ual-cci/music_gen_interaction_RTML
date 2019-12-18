@@ -8,10 +8,12 @@ Project is work in progress, so this will likely change and grow ...
 
 - `pip install Pillow numpy opencv-python PyWavelets tqdm slugify`
 - `pip install -U Flask`
+- `pip install lws==1.2.6`
 - `pip install librosa tflearn`
 - `jackd` (https://jackaudio.org/) and the python client library from https://github.com/spatialaudio/jackclient-python/
   - `sudo apt-get install jack-tools`
   - `pip install JACK-Client --user`
+- For the nice UI install PyQt4 (or also can be used with PyQt5 after some adjustments)
 - Put your data into `__music_samples` and `__saved_models`:
   - for example: `__music_samples/mehldau/input.wav`
   - so that you have: `__saved_models/modelBest_Mehldau.tfl` (_ps: you can use https://github.com/Louismac/MAGNet to train your model - only remember to use the same settings for the model architecture_)
