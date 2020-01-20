@@ -6,6 +6,8 @@ from timeit import default_timer as timer
 import cooked_files_handler
 import tensorflow as tf
 import tflearn
+import threading
+import utils.audio_dataset_generator
 
 class ServerHandler(object):
     """
@@ -60,14 +62,53 @@ class ServerHandler(object):
         t_load_model = timer()-t_load_model
 
         t_load_song = timer()
-        self.load_impulses(song_i= self.song_i)
-        self.change_impulse(interactive_i = self.interactive_i)
+        #self.load_impulses(song_i= self.song_i) # no need we have the first one with the weights already
+        #self.change_impulse(interactive_i = self.interactive_i)
         t_load_song = timer()-t_load_song
 
-        print("Model loaded in", t_load_model, ", song loaded in", t_load_song, "(sec).")
+        #print("Model loaded in", t_load_model, ", song loaded in", t_load_song, "(sec).")
+        print("Model and song loaded in", t_load_model, "(sec).")
         # Time on potato pc: Model loaded in 1.007, song loaded in 12.365 (sec).
 
         self.VERBOSE = 1
+
+    def load_weights_ASYNC_FUNCTION(self, model_i):
+
+        model_path = self.songs_models.model_paths[model_i]
+        print("Loading ...", model_path.split("/")[-1])
+
+        new_model_handler = model_handler_lstm.ModelHandlerLSTM(self.settings.lstm_layers, self.settings.lstm_units, self.settings)
+        new_graph = tf.Graph()
+        with new_graph.as_default():
+            new_model_handler.create_model()
+            # Load model weights
+            if file_functions.file_exists(model_path + ".data-00000-of-00001"):
+                new_model_handler.load_model(model_path)
+            else:
+                print("[WARN!] No weights loaded in the model - it won't generate anything meaningful ...")
+
+        # HAVE LOADED:
+        print(">>>>>>>>>>>>>>>>>> FINISHED ASYNC LOADING MODEL:")
+        print("new_model_handler", new_model_handler)
+        print("new_graph", new_graph)
+        old_model_handler = self.model_handler
+        old_graph = self.graph
+        self.model_handler = new_model_handler
+        self.graph = new_graph
+
+        del old_model_handler
+        del old_graph
+
+
+    def load_weights_ASYNC(self, model_i):
+        """ Load on another thread, only then swap self.preloaded_impulses + self.model_handler.load_model(model_path) """
+
+        threads = []
+        t = threading.Thread(target=self.load_weights_ASYNC_FUNCTION, args=(model_i,))
+        threads.append(t)
+        t.start()
+
+        self.model_i = model_i
 
     def load_weights(self, model_i):
         model_path = self.songs_models.model_paths[model_i]
@@ -107,6 +148,47 @@ class ServerHandler(object):
             print("Loaded self.preloaded_impulses from dataset!")
 
         self.model_i = model_i
+
+    def load_impulses_ASYNC_FUNCTION(self, song_i):
+
+        song_path = self.songs_models.song_paths[song_i]
+        print("Loading music data...", song_path.split("/")[-2:])
+
+        ## should this be in the audio_handler?
+        dataset_path = song_i
+        dataset_path = dataset_path.replace('/home/vitek/Projects', '/home/ubuntu/Projects')
+
+        dataset = utils.audio_dataset_generator.AudioDatasetGenerator(
+            fft_size = self.fft_size, window_size = self.window_size, hop_size = self.hop_size,
+            sequence_length = self.sequence_length, sample_rate = self.sample_rate)
+        try:
+            dataset.load(dataset_path, prevent_shuffling=True)
+        except:
+            print("!!!! Datase is not loaded")
+            dataset = None
+
+        ###dataset = self.audio_handler.load_dataset(song_path)
+        print(">>>>>>>>>>>>>>>>>> FINISHED ASYNC LOADING IMPULSES:")
+
+        if dataset is not None:
+            # now we care about the unsorted x_frames
+            self.preloaded_impulses = dataset.x_frames
+        else:
+            print("[WARN!] No impulses for loading! Will generate some nonesence instead, but it won't really work.")
+            self.preloaded_impulses = np.random.rand(10, 40, 1025)
+
+        self.song_i = song_i
+        print("Preloaded", len(self.preloaded_impulses), "impulse samples.")
+
+    def load_impulses_ASYNC(self, song_i):
+        """ Load on another thread, only then swap self.preloaded_impulses + self.model_handler.load_model(model_path) """
+
+        threads = []
+        t = threading.Thread(target=self.load_impulses_ASYNC_FUNCTION, args=(song_i,))
+        threads.append(t)
+        t.start()
+
+        self.song_i = song_i
 
     def load_impulses(self, song_i):
         """

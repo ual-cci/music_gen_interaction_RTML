@@ -167,7 +167,8 @@ def get_audio():
         if song_i != current_song_i:
             print("Loading new song data! (",song_i,")")
             t_load_song = timer()
-            serverside_handler.load_impulses(song_i=song_i)
+            #serverside_handler.load_impulses(song_i=song_i)
+            serverside_handler.load_impulses_ASYNC(song_i=song_i)
             t_load_song = timer() - t_load_song
             print("Loading took = ", t_load_song, "sec")
 
@@ -175,7 +176,8 @@ def get_audio():
             print("Loading new model weights! (",model_i,")")
             t_load_model = timer()
             ##serverside_handler.model_handler.create_model() # << REDO EVERYTHING? Hope that it wont be needed
-            serverside_handler.load_weights(model_i=model_i)
+            #serverside_handler.load_weights(model_i=model_i)
+            serverside_handler.load_weights_ASYNC(model_i=model_i)
             t_load_model = timer() - t_load_model
             print("Loading took = ", t_load_model, "sec")
 
