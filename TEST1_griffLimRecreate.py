@@ -1,4 +1,4 @@
-audio_data_path = "/home/vitek/Projects/music_gen_interaction_RTML/__music_samples/dnb/"
+audio_data_path = "/home/ubuntu/Projects/music_gen_interaction_RTML/new_audio_samples/dnb/"
 
 from utils.audio_dataset_generator import AudioDatasetGenerator
 import scipy.io.wavfile
@@ -12,13 +12,14 @@ hop_size             = fft_settings[2]
 sequence_length = 40
 sample_rate = 44100
 
-# method="Griff"
-method="LWS"
+method="Griff"
+#method="LWS"
 
 from audio_handler import AudioHandler
 import utils
 
 audio_handler = AudioHandler(griffin_iterations = 60, fft_size=fft_size, window_size=window_size, hop_size=hop_size, sample_rate=sample_rate, sequence_length=sequence_length)
+# This uses: librosa.stft and librosa.magphase
 dataset = audio_handler.load_dataset(audio_data_path)
 
 print("Dataset:", dataset.x_frames.shape, dataset.y_frames.shape)
@@ -46,6 +47,8 @@ def recreate_samples(x_frames, y_frames, audio_handler, method, idx_start=0, amo
             predicted_magnitudes = np.array(predicted_magnitudes)
             print("predicted_magnitudes.shape", predicted_magnitudes.shape)
 
+            # griff lim: librosa.core.istft
+            # lws: lws_processor.istft (possible problem ...)
             audio = audio_handler.spectrogram2audio(predicted_magnitudes, method=method)
 
             all_audio += [audio]
@@ -58,7 +61,7 @@ def recreate_samples(x_frames, y_frames, audio_handler, method, idx_start=0, amo
 
 audio = recreate_samples(dataset.x_frames, dataset.y_frames, audio_handler, method,idx_start=500)
 print("recreated", audio.shape)
-scipy.io.wavfile.write("/home/vitek/Projects/music_gen_interaction_RTML/TEST1_recreatedNotShuffledUsed"+str(method)+".wav", sample_rate, audio[0])
+scipy.io.wavfile.write("/home/ubuntu/Projects/music_gen_interaction_RTML/TEST1_recreatedNotShuffledUsed"+str(method)+".wav", sample_rate, audio[0])
 
 #import librosa
 #librosa.output.write_wav('TEST1_recreatedNotShuffledUsedGriffLim.wav', audio[0], sample_rate)
