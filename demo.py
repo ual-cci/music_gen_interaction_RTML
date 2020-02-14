@@ -7,6 +7,10 @@ subprocess.run(["pkill", "-f", "client__playbackWithServer.py"]) # prevent froze
 subprocess.run(["pkill", "-f", "server.py"]) # prevent frozen instances!
 #subprocess.run(["pkill", "-f", "osc_interaction.py"]) # prevent frozen instances!
 subprocess.run(["pkill", "-f", "osc_interaction_pyqt.py"]) # prevent frozen instances!
+
+
+# usb sound card on 2,0 (see "aplay -l"; card,device comes from 'card 2: Device [USB Audio Device], device 0: USB Audio [USB Audio]')
+#subprocess.Popen(["jackd", "-R", "-d", "alsa", "-d", "hw:2,0", "-r", "44100"]) # start jackd with specific rate 44.1kHz
 subprocess.Popen(["jackd", "-R", "-d", "alsa", "-r", "44100"]) # start jackd with specific rate 44.1kHz
 
 #processes = ('server.py', 'osc_interaction.py', 'client__playbackWithServer.py')
