@@ -1,7 +1,12 @@
 import sys
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+#from PyQt4.QtCore import *
+#from PyQt4.QtGui import *
+# PyQt5 version:
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
 from oscpy.client import OSCClient
+from PyQt5.QtWidgets import QApplication, QWidget
+from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QComboBox, QPushButton, QLineEdit, QSlider
 
 # https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_gui/py_trackbar/py_trackbar.html#trackbar
 # https://github.com/kivy/oscpy
@@ -51,9 +56,9 @@ class GUI_OSC(QWidget):
 
 
         # Sliders
-        percentage, self.percentage_slider = self.add_slider("Percentage:", style, value=200, maximum=1000)
-        length, self.length_slider = self.add_slider("Length:", style, value=32, maximum=1024)
-        change_speed, self.change_speed_slider = self.add_slider("Change speed:", style, value=80, maximum=200)
+        percentage, self.percentage_slider = self.add_slider("Relative position in audio:", style, value=200, maximum=1000)
+        length, self.length_slider = self.add_slider("Length:", style, value=32, maximum=124, minimum=4)
+        change_speed, self.change_speed_slider = self.add_slider("Transition speed:", style, value=80, maximum=200)
         volume, self.volume_slider = self.add_slider("Volume:", style, value=100, maximum=300)
 
         layout.addLayout(percentage)
