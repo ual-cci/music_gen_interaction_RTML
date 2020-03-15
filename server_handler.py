@@ -24,6 +24,8 @@ class ServerHandler(object):
         settings.print_settings()
         self.settings = settings
 
+        self.preloaded_impulses = None
+
         self.first_iteration = True
 
         self.keep_only_newly_generated = True
@@ -62,8 +64,11 @@ class ServerHandler(object):
         t_load_model = timer()-t_load_model
 
         t_load_song = timer()
-        #self.load_impulses(song_i= self.song_i) # no need we have the first one with the weights already
-        #self.change_impulse(interactive_i = self.interactive_i)
+        if self.preloaded_impulses is None:
+            print("Also have to load the song")
+            # this happens in Regular load mode (aka with older models)
+            self.load_impulses(song_i= self.song_i) # no need we have the first one with the weights already
+            self.change_impulse(interactive_i = self.interactive_i)
         t_load_song = timer()-t_load_song
 
         #print("Model loaded in", t_load_model, ", song loaded in", t_load_song, "(sec).")

@@ -54,6 +54,11 @@ parser.add_argument('-griffin_iterations', help='iterations to use in griffin re
 # this one is the hardest hit I guess, still sounds reasonable though
 ```
 
+## (Note) Windows PC Setup:
+
+Qt setup: qt-opensource-windows-x86-5.14.1.exe + pip install pyqt5
+
+(didn't work) Jack setup: ASIO4ALL_2_14_English.exe (drivers) + Jack_v1.9.11_64_setup.exe (jackd) + follow https://jackaudio.org/faq/jack_on_windows.html (regsvr32 JackRouter.dll) (jackd.exe -R -S -d portaudio -d "ASIO::ASIO4ALL v2") + pip install JACK-Client --user
 ## Demo
 
 Video with the "proto"-UI: https://www.youtube.com/watch?v=w7Sk7RTVs9U

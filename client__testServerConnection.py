@@ -30,7 +30,7 @@ sample_rate = 22050
 
 repetitions = 10 #10
 sequence_to_try = [4, 8, 10, 16, 32]
-sequence_to_try = [32, 64, 128, 256, 512, 1024]
+sequence_to_try = [16, 32, 64]
 
 # = GET AUDIO =================================================
 for len_to_test in sequence_to_try:
@@ -51,10 +51,11 @@ for len_to_test in sequence_to_try:
                    "interactive_i": str(0),
                    "model_i": str(0),
                    "song_i": str(0),
+                   "change_speed": str(0),
                    }
-
+        #print("Sent out payload:", payload)
         r = requests.post(Handshake_GETAUDIO_API_URL, files=payload).json()
-        #print("Get audio request data", r)
+        print("Get audio request data", r)
 
         audio_response = r["audio_response"]
         t_predict = r["time_predict"]
@@ -195,8 +196,8 @@ ax.legend()
 
 #filename = slugify(title)
 filename = "speeds"
-plt.savefig("plots/"+filename+".png", dpi=200)
-#plt.savefig("plots/"+filename+".pdf", dpi=200)
+plt.savefig("plots_"+filename+".png", dpi=200)
+#plt.savefig("plots_"+filename+".pdf", dpi=200)
 
 plt.show()
 plt.close()
