@@ -13,7 +13,11 @@ Project is work in progress, so this will likely change and grow ...
 - `jackd` (https://jackaudio.org/) and the python client library from https://github.com/spatialaudio/jackclient-python/
   - `sudo apt-get install jack-tools`
   - `pip install JACK-Client --user`
-- For the nice UI install PyQt4 (or also can be used with PyQt5 after some adjustments)
+- For GUI install Qt5 + PyQt5
+  - Qt5: `sudo apt-get install build-essential`, `sudo apt-get install qtcreator`, `sudo apt-get install qt5-default`
+  - PyQt5: `pip3 install --user pyqt5`, `sudo apt-get install python3-pyqt5`, `sudo apt-get install pyqt5-dev-tools`, `sudo apt-get install qttools5-dev-tools`
+
+
 - Put your data into `__music_samples` and `__saved_models`:
   - for example: `__music_samples/mehldau/input.wav`
   - so that you have: `__saved_models/modelBest_Mehldau.tfl` (_ps: you can use https://github.com/Louismac/MAGNet to train your model - only remember to use the same settings for the model architecture_)
