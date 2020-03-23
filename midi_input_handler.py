@@ -27,13 +27,18 @@ class MIDI_Input_Handler(object):
     # ps: data2 includes the information about the strength of the press - from around 64 (normal press) to 100 (hard press)
     # ps2: "Touch Scale" causes X-Y pad movement being detected as some PAD presses ... we don't want that!
 
-    def __init__(self, device_id):
+    def __init__(self, device_id, function_to_call_pad_click, function_to_call_xy_pad, verbose = 0):
         self.device_id = device_id
         self.xy_pad_x = 0
         self.xy_pad_y = 0
 
         self.xy_pad_delta_x = 0
         self.xy_pad_delta_y = 0
+
+        self.function_to_call_pad_click = function_to_call_pad_click
+        self.function_to_call_xy_pad = function_to_call_xy_pad
+
+        self.verbose = verbose
 
         self.prepare()
 
@@ -81,6 +86,8 @@ class MIDI_Input_Handler(object):
 
 
     def filter_key(self, incoming_event):
+        #print("-called filter_key")
+
         status = incoming_event.status
         data1 = incoming_event.data1
         data2 = incoming_event.data2
@@ -91,8 +98,14 @@ class MIDI_Input_Handler(object):
             # Pad press
             even = (data1 % 2) == 0
             pad_to_number = math.floor((data1 - self.KEYS_RANGE_FIRST_SCENE_data1[0]) / 2) + 1
+
+            if self.verbose > 0:
+                print("PAD PRESS (even:", even,")", pad_to_number, " ", incoming_event)
+            self.function_to_call_pad_click(incoming_event, pad_to_number, even)
+            """
             if even:
                 print("PAD PRESS bottom row, SAVE AS ", pad_to_number, " ", incoming_event)
+
 
                 # DEMO FUNCTIONALITY:
                 percentage = pad_to_number * 100 # HAX DEMO
@@ -112,7 +125,7 @@ class MIDI_Input_Handler(object):
 
             else:
                 print("PAD PRESS up row, LOAD FROM ", pad_to_number, " ", incoming_event)
-
+            """
 
         elif status == self.PAD_MOVE_status and data1 != self.PAD_MOVE_FINISHED_data1:
             # data2 goes from 0 to 127 for both axes - x and y
@@ -129,11 +142,17 @@ class MIDI_Input_Handler(object):
                 self.xy_pad_y = pad_xy_to_plusminus_one_range_float(data2)
                 self.xy_pad_delta_y = self.xy_pad_y - previous
 
-            print("X-Y PAD location: xy=", round(self.xy_pad_x, 2), round(self.xy_pad_y, 2), " ... deltas xy=", round(self.xy_pad_delta_x, 2), round(self.xy_pad_delta_y, 2))
+            if self.verbose > 0:
+                print("X-Y PAD location: xy=", round(self.xy_pad_x, 2), round(self.xy_pad_y, 2), " ... deltas xy=", round(self.xy_pad_delta_x, 2), round(self.xy_pad_delta_y, 2))
+
+            xy = self.xy_pad_x, self.xy_pad_y, self.xy_pad_delta_x, self.xy_pad_delta_y
+            self.function_to_call_xy_pad(incoming_event, xy)
 
         # else: # ignored ...
         #    print("-------?:", incoming_event)
 
+    def print_device_info(self):
+        print_device_info()
 
 def pad_xy_to_plusminus_one_range_float(xy_pad_value):
     # 0 to 127 .. -63.5 to 63.5 .. -1.0 to 1.0
@@ -180,5 +199,9 @@ if __name__ == '__main__':
     if 'linux' in platform.system().lower(): # linux / windows
         device_id = 3
 
-    midi_handler = MIDI_Input_Handler(device_id)
+    def foo(*a):
+        pass
+
+    verbose = 1
+    midi_handler = MIDI_Input_Handler(device_id, foo, foo, verbose)
     midi_handler.input_loop()

@@ -1,0 +1,176 @@
+import sys
+#from PyQt4.QtCore import *
+#from PyQt4.QtGui import *
+# PyQt5 version:
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from oscpy.client import OSCClient
+from PyQt5.QtWidgets import QApplication, QWidget
+from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QComboBox, QPushButton, QLineEdit, QSlider
+from midi_input_handler import MIDI_Input_Handler, print_device_info
+import threading, time
+
+# OSC: https://github.com/kivy/oscpy
+# MIDI: https://github.com/xamox/pygame/blob/master/examples/midi.py
+
+
+class GUI_OSC(QWidget):
+    def __init__(self, parent=None):
+        super(GUI_OSC, self).__init__(parent)
+        self.setWindowTitle("Interactive Music Generation")
+        self.font_size = 14
+
+        # Init OSC - output
+        address = "127.0.0.1"
+        port = 8008
+        self.osc = OSCClient(address, port, encoding='utf8')
+        self.text = ""
+
+        # Init MIDI controller - input
+        device_id = 1
+        import platform
+        if 'linux' in platform.system().lower():  # linux / windows
+            device_id = 3
+
+        print_device_info()
+        function_to_call_pad_click = self.midi_bound_pad_click
+        function_to_call_xy_pad = self.midi_bound_xy_pad
+        midi_controller = MIDI_Input_Handler(device_id, function_to_call_pad_click, function_to_call_xy_pad)
+
+        threading.Thread(target=midi_controller.input_loop,args=[]).start()
+        print("Initiated midi controller! device_id=", device_id)
+
+
+        import settings
+        import cooked_files_handler
+
+        self.settings = settings.Settings()
+        self.songs_models = cooked_files_handler.CookedFilesHandler(self.settings)
+        self.songs_models.prepare_songs_models_paths()
+
+        # Init on screen GUI - input
+        layout = QVBoxLayout()
+        style = "QWidget {font-size: "+str(self.font_size)+"pt;}"
+
+        hbox_model_select = QHBoxLayout()
+        text_model_select = QLabel()
+        text_model_select.setText("Model selection:")
+        text_model_select.setStyleSheet(style)
+        model_select = QComboBox()
+        for model_path in self.songs_models.model_paths:
+            just_model = model_path.split("/")[-1]
+            just_model = just_model[0:min(len(just_model), 30)]
+            model_select.addItem(just_model)
+
+        self.model_select = model_select
+        model_select.currentIndexChanged.connect(self.onChangeSend) # <<< On change function
+        font = model_select.font()
+        font.setPointSize(self.font_size)
+        model_select.setFont(font)
+
+        hbox_model_select.addWidget(text_model_select)
+        hbox_model_select.addWidget(model_select)
+
+        layout.addLayout(hbox_model_select)
+
+
+        # Sliders
+        percentage, self.percentage_slider = self.add_slider("Relative position in audio:", style, value=200, maximum=1000)
+        length, self.length_slider = self.add_slider("Length:", style, value=32, maximum=124, minimum=4)
+        change_speed, self.change_speed_slider = self.add_slider("Transition speed:", style, value=80, maximum=200)
+        volume, self.volume_slider = self.add_slider("Volume:", style, value=100, maximum=300)
+
+        layout.addLayout(percentage)
+        layout.addLayout(length)
+        layout.addLayout(change_speed)
+        layout.addLayout(volume)
+
+        # Record button
+        hbox_record = QHBoxLayout()
+        recButton = QPushButton("Save!")
+        recButton.setStyleSheet(style)
+        hbox_record.addWidget(recButton)
+        recButton.setCheckable(True)
+
+
+        file_textbox = QLineEdit()
+        file_textbox.setText("tmp_recording1")
+        hbox_record.addWidget(file_textbox)
+
+        self.file_textbox = file_textbox
+        self.recButton = recButton
+        self.recButton_state = False
+        recButton.clicked.connect(self.recording_toggle)
+
+        layout.addLayout(hbox_record)
+
+        self.setLayout(layout)
+
+
+    def add_slider(self, txt, style, value = 0, minimum = 0, maximum = 100):
+        layout = QHBoxLayout()
+        text = QLabel()
+        text.setText(txt)
+        text.setStyleSheet(style)
+        slider = QSlider(Qt.Horizontal)
+        slider.setMinimum(minimum)
+        slider.setMaximum(maximum)
+        slider.setValue(value)
+
+
+        val = QLabel()
+        val.setNum(value)
+        val.setStyleSheet(style)
+
+        slider.valueChanged.connect(val.setNum)
+        slider.valueChanged.connect(self.onChangeSend)
+
+        layout.addWidget(text)
+        layout.addWidget(val)
+        layout.addWidget(slider)
+        return layout, slider
+
+
+    def onChangeSend(self, i):
+
+        percentage = self.percentage_slider.value()
+        requested_lenght = self.length_slider.value()
+        change_speed = self.change_speed_slider.value()
+        volume = self.volume_slider.value()
+        model_i = self.model_select.currentIndex()
+
+        print("Sending message=", [percentage, model_i, 0, requested_lenght, change_speed, volume])
+        self.osc.send_message(b'/send_i', [percentage, model_i, 0, requested_lenght, change_speed, volume])
+
+    def recording_toggle(self):
+        self.recButton_state = not self.recButton_state
+        if self.recButton_state:
+            #print("button pressed - start recording!")
+            self.osc.send_message(b'/record', [0, ""])
+
+        else:
+            #print("button released - end recording + save into |"+self.file_textbox.text()+"|")
+            self.osc.send_message(b'/record', [1, self.file_textbox.text()])
+
+    # Functions to be bound to MIDI controller events:
+    #function_to_call_pad_click, function_to_call_xy_pad
+
+    def midi_bound_pad_click(self, event, pad_number, load_or_save):
+        print("Detected click", pad_number, load_or_save)
+
+    def midi_bound_xy_pad(self, event, xy):
+        xy_pad_x, xy_pad_y, xy_pad_delta_x, xy_pad_delta_y = xy
+
+        print("Detected X-Y PAD movement: xy=", round(xy_pad_x, 2), round(xy_pad_y, 2), " ... deltas xy=",
+              round(xy_pad_delta_x, 2), round(xy_pad_delta_y, 2))
+
+
+def main():
+    app = QApplication(sys.argv)
+    ex = GUI_OSC()
+    ex.show()
+    sys.exit(app.exec_())
+
+
+if __name__ == '__main__':
+    main()
