@@ -145,6 +145,15 @@ class MIDI_Input_Handler(object):
             if self.verbose > 0:
                 print("X-Y PAD location: xy=", round(self.xy_pad_x, 2), round(self.xy_pad_y, 2), " ... deltas xy=", round(self.xy_pad_delta_x, 2), round(self.xy_pad_delta_y, 2))
 
+            # limit the delta to +- 0.05 (to prevent large jumps from touching two sides of the pad!)
+            #self.xy_pad_delta_x = min(0.05, max(-0.05, self.xy_pad_delta_x))
+            #self.xy_pad_delta_y = min(0.05, max(-0.05, self.xy_pad_delta_y))
+            # Or actually ignore those jumps entirely!
+            if abs(self.xy_pad_delta_x) > 0.10:
+                self.xy_pad_delta_x = 0.0
+            if abs(self.xy_pad_delta_y) > 0.10:
+                self.xy_pad_delta_y = 0.0
+
             xy = self.xy_pad_x, self.xy_pad_y, self.xy_pad_delta_x, self.xy_pad_delta_y
             self.function_to_call_xy_pad(incoming_event, xy)
 

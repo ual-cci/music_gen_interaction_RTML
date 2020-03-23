@@ -15,10 +15,29 @@ import threading, time
 
 
 class GUI_OSC(QWidget):
+
+
+    MIDI_MODE_XY_PAD_REACTION = "MovePercentageALittleBit" # nudge by swiping
+    # Not very sensitive:
+    #MIDI_MODE_XY_PAD_REACTION = "MovePercentageMappedLeftToRight" # sides left=0, right=1000
+
+
+    DEFAULT_POSITION = 200
+    MIN_POSITION = 0
+    MAX_POSITION = 1000
+
+    DEFAULT_LENGTH = 32
+    DEFAULT_CHANGESPEED = 80
+    DEFAULT_VOLUME = 100
+    # default selected song i = 0
+
     def __init__(self, parent=None):
         super(GUI_OSC, self).__init__(parent)
         self.setWindowTitle("Interactive Music Generation")
         self.font_size = 14
+
+        self.verbose = 1 # 2 = too much, 1 = enough, 0 will be silent
+        self.last = None
 
         # Init OSC - output
         address = "127.0.0.1"
@@ -40,6 +59,9 @@ class GUI_OSC(QWidget):
         threading.Thread(target=midi_controller.input_loop,args=[]).start()
         print("Initiated midi controller! device_id=", device_id)
 
+        # empty saved positions for midi bound clicks
+        self.saved_positions = {}
+        self.load_midi_positions()
 
         import settings
         import cooked_files_handler
@@ -75,10 +97,10 @@ class GUI_OSC(QWidget):
 
 
         # Sliders
-        percentage, self.percentage_slider = self.add_slider("Relative position in audio:", style, value=200, maximum=1000)
-        length, self.length_slider = self.add_slider("Length:", style, value=32, maximum=124, minimum=4)
-        change_speed, self.change_speed_slider = self.add_slider("Transition speed:", style, value=80, maximum=200)
-        volume, self.volume_slider = self.add_slider("Volume:", style, value=100, maximum=300)
+        percentage, self.percentage_slider = self.add_slider("Relative position in audio:", style, value=self.DEFAULT_POSITION, maximum=1000)
+        length, self.length_slider = self.add_slider("Length:", style, value=self.DEFAULT_LENGTH, maximum=124, minimum=4)
+        change_speed, self.change_speed_slider = self.add_slider("Transition speed:", style, value=self.DEFAULT_CHANGESPEED, maximum=200)
+        volume, self.volume_slider = self.add_slider("Volume:", style, value=self.DEFAULT_VOLUME, maximum=300)
 
         layout.addLayout(percentage)
         layout.addLayout(length)
@@ -139,8 +161,22 @@ class GUI_OSC(QWidget):
         volume = self.volume_slider.value()
         model_i = self.model_select.currentIndex()
 
-        print("Sending message=", [percentage, model_i, 0, requested_lenght, change_speed, volume])
-        self.osc.send_message(b'/send_i', [percentage, model_i, 0, requested_lenght, change_speed, volume])
+        message = [percentage, model_i, 0, requested_lenght, change_speed, volume]
+
+        # Send only if we actually change some values:
+        changed = False
+        if self.last is not None:
+            for idx in range(len(message)):
+                if message[idx] != self.last[idx]:
+                    changed = True
+                    break
+        else:
+            changed = True
+        self.last = message
+
+        if changed:
+            print("Sending message=", message)
+            self.osc.send_message(b'/send_i', message)
 
     def recording_toggle(self):
         self.recButton_state = not self.recButton_state
@@ -155,15 +191,51 @@ class GUI_OSC(QWidget):
     # Functions to be bound to MIDI controller events:
     #function_to_call_pad_click, function_to_call_xy_pad
 
-    def midi_bound_pad_click(self, event, pad_number, load_or_save):
-        print("Detected click", pad_number, load_or_save)
+    def midi_bound_pad_click(self, event, pad_number, to_save):
+        if to_save:
+            print("Save position as", pad_number)
+            percentage_slider_value = self.percentage_slider.value()
+            self.saved_positions[pad_number] = percentage_slider_value
+
+            self.save_midi_positions()
+
+        else:
+            print("Load position from", pad_number)
+            if pad_number in self.saved_positions:
+                new_value = self.saved_positions[pad_number]
+                self.percentage_slider.setValue(new_value)
+
 
     def midi_bound_xy_pad(self, event, xy):
         xy_pad_x, xy_pad_y, xy_pad_delta_x, xy_pad_delta_y = xy
 
-        print("Detected X-Y PAD movement: xy=", round(xy_pad_x, 2), round(xy_pad_y, 2), " ... deltas xy=",
-              round(xy_pad_delta_x, 2), round(xy_pad_delta_y, 2))
+        if self.verbose > 1:
+            print("Detected X-Y PAD movement: xy=", round(xy_pad_x, 2), round(xy_pad_y, 2), " ... deltas xy=", round(xy_pad_delta_x, 2), round(xy_pad_delta_y, 2))
 
+        # x movement to percentage position?
+        # change GUI element position - this will also trigger an event
+
+        if self.MIDI_MODE_XY_PAD_REACTION == "MovePercentageALittleBit":
+            old_value = float(self.percentage_slider.value()) # from 0 to 1000
+            print(old_value)
+            move_scale = 100.0
+            move_by = xy_pad_delta_x * move_scale # delta is usually +-0.05 => +- 5?
+            new_value = int(max(0, min(old_value + move_by, self.MAX_POSITION)))
+
+            print("called change from ", old_value, "to", new_value)
+            self.percentage_slider.setValue(new_value)
+        elif self.MIDI_MODE_XY_PAD_REACTION == "MovePercentageMappedLeftToRight":
+            scale = (1.0 + xy_pad_x) / 2.0 # now in 0.0 to 1.0
+            new_value = int(scale * self.MAX_POSITION) # now this goes from 0 to 1000
+
+            self.percentage_slider.setValue(new_value)
+
+    # Keep MIDI controls saved between runs!
+    def save_midi_positions(self):
+        pass
+
+    def load_midi_positions(self):
+        pass
 
 def main():
     app = QApplication(sys.argv)
