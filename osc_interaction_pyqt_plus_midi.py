@@ -1,4 +1,4 @@
-import sys
+import sys, os
 #from PyQt4.QtCore import *
 #from PyQt4.QtGui import *
 # PyQt5 version:
@@ -9,10 +9,10 @@ from PyQt5.QtWidgets import QApplication, QWidget
 from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QComboBox, QPushButton, QLineEdit, QSlider
 from midi_input_handler import MIDI_Input_Handler, print_device_info
 import threading, time
+import json
 
 # OSC: https://github.com/kivy/oscpy
 # MIDI: https://github.com/xamox/pygame/blob/master/examples/midi.py
-
 
 class GUI_OSC(QWidget):
 
@@ -192,19 +192,23 @@ class GUI_OSC(QWidget):
     #function_to_call_pad_click, function_to_call_xy_pad
 
     def midi_bound_pad_click(self, event, pad_number, to_save):
+        pad_number = str(pad_number)
+
         if to_save:
-            print("Save position as", pad_number)
             percentage_slider_value = self.percentage_slider.value()
+            print("Save position",percentage_slider_value,"as", pad_number)
             self.saved_positions[pad_number] = percentage_slider_value
 
             self.save_midi_positions()
 
         else:
-            print("Load position from", pad_number)
             if pad_number in self.saved_positions:
                 new_value = self.saved_positions[pad_number]
-                self.percentage_slider.setValue(new_value)
+                print("Load from position", pad_number, "value", new_value)
 
+                self.percentage_slider.setValue(new_value)
+            else:
+                print("Load from empty position", pad_number)
 
     def midi_bound_xy_pad(self, event, xy):
         xy_pad_x, xy_pad_y, xy_pad_delta_x, xy_pad_delta_y = xy
@@ -232,10 +236,17 @@ class GUI_OSC(QWidget):
 
     # Keep MIDI controls saved between runs!
     def save_midi_positions(self):
-        pass
+        with open('midi_saved_positions.json', 'w') as fp:
+            json.dump(self.saved_positions, fp)
 
     def load_midi_positions(self):
-        pass
+        if os.path.isfile('midi_saved_positions.json'):
+            with open('midi_saved_positions.json', 'r') as fp:
+                self.saved_positions = json.load(fp)
+
+            print("Loaded", len(self.saved_positions.keys()), "saved positions from before:")
+            print(self.saved_positions)
+
 
 def main():
     app = QApplication(sys.argv)
