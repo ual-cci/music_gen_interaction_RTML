@@ -5,7 +5,7 @@
 from __future__ import division, print_function
 import time
 import jack
-import sys
+import sys, os
 import numpy as np
 from threading import Event
 try:
@@ -420,6 +420,10 @@ try:
             # RECORDED_audio.shape (76, 2048)
             audio_total = np.asarray(RECORDED_audio).flatten()
             print("audio_total.shape", np.asarray(audio_total).shape)
+
+            if not os.path.exists('data'):
+                os.makedirs('data')
+
             save_audio_debug(file_name, audio_total, sample_rate=44100) # save in 44.1
 
             # save
