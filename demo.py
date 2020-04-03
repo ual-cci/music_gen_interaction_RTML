@@ -5,8 +5,8 @@ import subprocess
 subprocess.run(["killall", "jackd"])
 subprocess.run(["pkill", "-f", "client__playbackWithServer.py"]) # prevent frozen instances!
 subprocess.run(["pkill", "-f", "server.py"]) # prevent frozen instances!
-#subprocess.run(["pkill", "-f", "osc_interaction.py"]) # prevent frozen instances!
-#subprocess.run(["pkill", "-f", "osc_interaction_pyqt.py"]) # prevent frozen instances!
+subprocess.run(["pkill", "-f", "osc_interaction.py"]) # prevent frozen instances!
+subprocess.run(["pkill", "-f", "osc_interaction_pyqt.py"]) # prevent frozen instances!
 subprocess.run(["pkill", "-f", "osc_interaction_pyqt_plus_midi.py"]) # prevent frozen instances!
 
 
