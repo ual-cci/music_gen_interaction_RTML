@@ -103,10 +103,10 @@ class TrainingHandler(object):
 
         # Train!
         losses = []
-        monitorCallback = TrainingMonitorCallback(losses)
+        #monitorCallback = TrainingMonitorCallback(losses)
 
         model_handler.model.fit(dataset.x_frames, dataset.y_frames, show_metric=True, batch_size=model_handler.batch_size,
-                                n_epoch=model_handler.amount_epochs, callbacks=[monitorCallback])
+                                n_epoch=model_handler.amount_epochs)#, callbacks=[monitorCallback])
 
         # Save plot
         print("report >>>", losses)

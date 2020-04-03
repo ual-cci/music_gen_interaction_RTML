@@ -143,7 +143,8 @@ class ModelHandlerLSTM(object):
         net = tflearn.regression(net, optimizer=self.optimiser, learning_rate=self.learning_rate,
                                  loss=self.loss_type)
 
-        model = tflearn.DNN(net, tensorboard_verbose=1)
+        #model = tflearn.DNN(net, tensorboard_verbose=1)
+        model = tflearn.DNN(net, tensorboard_verbose=0)
 
         self.model = model
 
