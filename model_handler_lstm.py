@@ -144,7 +144,7 @@ class ModelHandlerLSTM(object):
                                  loss=self.loss_type)
 
         #model = tflearn.DNN(net, tensorboard_verbose=1)
-        model = tflearn.DNN(net, tensorboard_verbose=0)
+        model = tflearn.DNN(net, tensorboard_verbose=3)
 
         self.model = model
 

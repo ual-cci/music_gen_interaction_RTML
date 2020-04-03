@@ -213,10 +213,16 @@ def get_audio():
             # LSTM_2 has shape (256, 512)
             # FullyConnected has shape (128, 1025)
             # FullyConnected_1 has shape (1025, 1025)
+            if False: # if old model:
+                target_tensor_name = "LSTM_1"
+                operation = serverside_handler.model_handler.times_a
+                serverside_handler.change_lstm_net(target_tensor_name, operation, weights_multiplier)
 
-            target_tensor_name="LSTM_1"
-            operation = serverside_handler.model_handler.times_a
-            serverside_handler.change_lstm_net(target_tensor_name, operation, weights_multiplier)
+            # if new model:
+            with serverside_handler.graph.as_default():
+                target_tensor_name="LSTM_1"
+                operation = serverside_handler.model_handler.times_a
+                serverside_handler.change_lstm_net(target_tensor_name, operation, weights_multiplier)
 
             # then save it
             serverside_handler.weights_multiplier = weights_multiplier

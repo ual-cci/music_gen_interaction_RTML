@@ -29,7 +29,12 @@ class ServerHandler(object):
         self.first_iteration = True
 
         self.keep_only_newly_generated = True
+
         self.continue_impulse_from_previous_batch = True
+        # SPECIAL MODE - RESTART SEED EVERY "requested_length"-worth of generated music
+        #    ... when self.continue_impulse_from_previous_batch is False
+        self.continue_impulse_from_previous_batch = False
+
         self.previous_audio_overlap = None
 
         self.change_impulses_smoothly = True
@@ -249,13 +254,21 @@ class ServerHandler(object):
 
     def change_lstm_net(self, target_tensor_name, operation, *kwargs):
         #self.model_handler.inspect_tensors()
-        self.model_handler.change_lstm_net(target_tensor_name, operation, *kwargs)
+        try:
+            self.model_handler.change_lstm_net(target_tensor_name, operation, *kwargs)
+        except Exception as e:
+            print("Exception", e)
+            print("Debug output, available tensors:")
+            self.model_handler.inspect_tensors()
+            assert False
 
     def generate_audio_sample(self, requested_length, interactive_i=0.0, method="Griff"):
         #audio_chunk = np.random.rand(36352, )
         #return audio_chunk, 0, 0
 
-        #self.change_impulse(interactive_i)
+        # SPECIAL MODE - RESTART SEED EVERY "requested_length"-worth of generated music
+        if not self.continue_impulse_from_previous_batch:
+            self.change_impulse(interactive_i)
 
         # seed it from random
         #impulse = np.random.rand(40, 1025)
