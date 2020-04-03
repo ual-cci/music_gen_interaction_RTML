@@ -247,6 +247,10 @@ class ServerHandler(object):
         self._is_changing_impulses = True
         self.interactive_i = interactive_i
 
+    def change_lstm_net(self, target_tensor_name, operation, *kwargs):
+        #self.model_handler.inspect_tensors()
+        self.model_handler.change_lstm_net(target_tensor_name, operation, *kwargs)
+
     def generate_audio_sample(self, requested_length, interactive_i=0.0, method="Griff"):
         #audio_chunk = np.random.rand(36352, )
         #return audio_chunk, 0, 0

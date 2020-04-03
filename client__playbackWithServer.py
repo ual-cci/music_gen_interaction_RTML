@@ -393,7 +393,7 @@ try:
         percentage, model_i, song_i, requested_lenght, change_speed, sent_volume, weights_multiplier = values
 
         SIGNAL_interactive_i = float(percentage)/1000.0 # 1000 = 100% = 1.0
-        SIGNAL_weights_multiplier = float(weights_multiplier)/100.0 # 100 = 100% = 1.0
+        SIGNAL_weights_multiplier = float(weights_multiplier/100.0) # 100 = 100% = 1.0
         SIGNAL_model_i = int(model_i)
         SIGNAL_song_i = int(song_i)
         SIGNAL_requested_lenght = int(requested_lenght)

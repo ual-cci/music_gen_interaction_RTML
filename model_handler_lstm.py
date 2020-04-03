@@ -90,6 +90,9 @@ class ModelHandlerLSTM(object):
             self.batch_size = settings.batch_size
             self.sequence_length = settings.sequence_length
 
+
+        self.original_weights = {}
+
         # auto init?
         #self.model = create_model()
 
@@ -143,6 +146,44 @@ class ModelHandlerLSTM(object):
         model = tflearn.DNN(net, tensorboard_verbose=1)
 
         self.model = model
+
+    # Neural Network direct weights editation
+    def inspect_tensors(self):
+        tensor_name_list = [tensor.name for tensor in tf.get_default_graph().as_graph_def().node]
+        print("We have", len(tensor_name_list), "tensors loaded in default graph!")
+        for tensor_name in tensor_name_list:
+            if "save" not in tensor_name and "Adam" not in tensor_name:
+                print(tensor_name, '\n')
+
+    def print_weights_shape(self, target_tensor_name):
+        layer_tensor = tflearn.variables.get_layer_variables_by_name(target_tensor_name)
+        if len(layer_tensor) > 0:
+            weights = self.model.get_weights(layer_tensor[0])
+            print(target_tensor_name, "has shape", weights.shape)
+
+    def times_a(self, a, np_arr):
+        return a * np_arr
+
+    def change_lstm_net(self, target_tensor_name, operation, *kwargs):
+        # restore old weights
+        for target_tensor_name in self.original_weights.keys():
+            layer_tensor = tflearn.variables.get_layer_variables_by_name(target_tensor_name)
+            orig_val = self.original_weights[target_tensor_name]
+            self.model.set_weights(layer_tensor[0], orig_val)
+
+        if target_tensor_name not in self.original_weights:
+            layer_tensor = tflearn.variables.get_layer_variables_by_name(target_tensor_name)
+            weights = self.model.get_weights(layer_tensor[0])
+            self.original_weights[target_tensor_name] = weights
+
+        # reload() # causes memory issues
+        layer_tensor = tflearn.variables.get_layer_variables_by_name(target_tensor_name)
+        weights = self.original_weights[target_tensor_name]
+
+        print("weights:", type(weights), weights.shape)
+        modified_weights = operation(weights, kwargs)
+        self.model.set_weights(layer_tensor[0], modified_weights)
+
 
     def generate_sample(self, input_impulse, requested_length, window_size=1024):
 

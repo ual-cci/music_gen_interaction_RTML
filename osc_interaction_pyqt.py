@@ -7,10 +7,10 @@ from PyQt5.QtGui import *
 from oscpy.client import OSCClient
 from PyQt5.QtWidgets import QApplication, QWidget
 from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QComboBox, QPushButton, QLineEdit, QSlider
+from gui_functions import DoubleSlider
 
 # https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_gui/py_trackbar/py_trackbar.html#trackbar
 # https://github.com/kivy/oscpy
-
 
 class GUI_OSC(QWidget):
     def __init__(self, parent=None):
@@ -60,7 +60,7 @@ class GUI_OSC(QWidget):
         length, self.length_slider = self.add_slider("Length:", style, value=32, maximum=124, minimum=4)
         change_speed, self.change_speed_slider = self.add_slider("Transition speed:", style, value=80, maximum=200)
         volume, self.volume_slider = self.add_slider("Volume:", style, value=100, maximum=300)
-        weights_multiplier, self.weights_multiplier = self.add_slider("Weights Multiplier:", style, value=100, maximum=200)
+        weights_multiplier, self.weights_multiplier = self.add_double_slider("Weights Multiplier:", style, minimum=-1, value=1, maximum=2)
 
         layout.addLayout(percentage)
         layout.addLayout(length)
@@ -113,6 +113,28 @@ class GUI_OSC(QWidget):
         layout.addWidget(slider)
         return layout, slider
 
+    def add_double_slider(self, txt, style, value = 0, minimum = 0, maximum = 100, decimals=3):
+        layout = QHBoxLayout()
+        text = QLabel()
+        text.setText(txt)
+        text.setStyleSheet(style)
+        slider = DoubleSlider(decimals, Qt.Horizontal)
+        slider.setMinimum(minimum)
+        slider.setMaximum(maximum)
+        slider.setValue(value)
+
+
+        val = QLabel()
+        val.setNum(value)
+        val.setStyleSheet(style)
+
+        slider.doubleValueChanged.connect(val.setNum)
+        slider.doubleValueChanged.connect(self.onChangeSend)
+
+        layout.addWidget(text)
+        layout.addWidget(val)
+        layout.addWidget(slider)
+        return layout, slider
 
     def onChangeSend(self, i):
 
@@ -122,6 +144,9 @@ class GUI_OSC(QWidget):
         volume = self.volume_slider.value()
         model_i = self.model_select.currentIndex()
         weights_multiplier = self.weights_multiplier.value()
+
+        ### NOT SURE IF FLOAT IS OK ???
+        weights_multiplier = int(100.0 * weights_multiplier)
 
         print("Sending message=", [percentage, model_i, 0, requested_lenght, change_speed, volume, weights_multiplier])
         self.osc.send_message(b'/send_i', [percentage, model_i, 0, requested_lenght, change_speed, volume, weights_multiplier])

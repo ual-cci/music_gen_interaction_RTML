@@ -207,8 +207,16 @@ def get_audio():
         # weights_multiplier
         if weights_multiplier != 1.0 and weights_multiplier != current_weights_multiplier:
             print("Neural Network weights adjustment! Set weights_multiplier=",weights_multiplier)
-            # apply change
 
+            # LSTM has shape (1153, 512)
+            # LSTM_1 has shape (256, 512)
+            # LSTM_2 has shape (256, 512)
+            # FullyConnected has shape (128, 1025)
+            # FullyConnected_1 has shape (1025, 1025)
+
+            target_tensor_name="LSTM_1"
+            operation = serverside_handler.model_handler.times_a
+            serverside_handler.change_lstm_net(target_tensor_name, operation, weights_multiplier)
 
             # then save it
             serverside_handler.weights_multiplier = weights_multiplier
