@@ -116,11 +116,15 @@ def get_audio():
         DEFAULT_model_i = 0
         DEFAULT_song_i = 0
         DEFAULT_change_speed = 120
+        DEFAULT_weights_multiplier = 1.0
+        weights_multiplier = DEFAULT_weights_multiplier
         requested_length = DEFAULT_lenght
         interactive_i = DEFAULT_interactive_i
         model_i = DEFAULT_model_i
         song_i = DEFAULT_song_i
         change_speed = DEFAULT_change_speed
+
+
 
         if len(flask.request.files) and SERVER_VERBOSE > 1:
             print("Recieved flask.request.files = ",flask.request.files)
@@ -130,17 +134,21 @@ def get_audio():
             interactive_i = flask.request.files["interactive_i"].read()
             model_i = flask.request.files["model_i"].read()
             song_i = flask.request.files["song_i"].read()
-            change_speed = int(flask.request.files["change_speed"].read())
+            change_speed = flask.request.files["change_speed"].read()
+            weights_multiplier = flask.request.files["weights_multiplier"].read()
+
             if SERVER_VERBOSE > 1:
-                print("received: ",requested_length, interactive_i, model_i, song_i)
+                print("received: ",requested_length, interactive_i, model_i, song_i, weights_multiplier)
 
             requested_length = int(requested_length)
             interactive_i = float(interactive_i)
+            weights_multiplier = float(weights_multiplier)
             model_i = int(model_i)
             song_i = int(song_i)
+            change_speed = int(change_speed)
 
         except Exception as e:
-            print("failed to read the requested_length", e)
+            print("failed to parse the flask.request.files!", e)
 
         print("Server will generate audio of requested length",requested_length,". Interactive i=",interactive_i)
 
@@ -151,6 +159,7 @@ def get_audio():
         current_model_i = serverside_handler.model_i
         current_song_i = serverside_handler.song_i
         current_interactive_i = serverside_handler.interactive_i
+        current_weights_multiplier = serverside_handler.weights_multiplier
 
         if not serverside_handler._is_changing_impulses:
             serverside_handler._change_steps = change_speed
@@ -159,9 +168,11 @@ def get_audio():
             print("current_model_i=",current_model_i)
             print("current_song_i=",current_song_i)
             print("current_interactive_i=",current_interactive_i)
+            print("current_weights_multiplier=",current_weights_multiplier)
             print("sent model_i=",model_i)
             print("sent song_i=",song_i)
             print("sent interactive_i=",interactive_i)
+            print("sent weights_multiplier=",weights_multiplier)
 
         # Perhaps do this differently ... so it doesn't get the server stuck!
         if song_i != current_song_i:
@@ -183,6 +194,7 @@ def get_audio():
 
         print(">>>>>>>>", current_model_i)
 
+
         if not serverside_handler.continue_impulse_from_previous_batch or (interactive_i != current_interactive_i):
             # Either change impulse every generation - or when it was changed
             print("Start with a new impulse:")
@@ -191,6 +203,15 @@ def get_audio():
                 serverside_handler.change_impulse(interactive_i)
             else:
                 serverside_handler.change_impulse_smoothly_start(interactive_i)
+
+        # weights_multiplier
+        if weights_multiplier != 1.0 and weights_multiplier != current_weights_multiplier:
+            print("Neural Network weights adjustment! Set weights_multiplier=",weights_multiplier)
+            # apply change
+
+
+            # then save it
+            serverside_handler.weights_multiplier = weights_multiplier
 
         # hard code (for now) if we are using GriffLim or LWS for reconstruction
         method = "Griff"

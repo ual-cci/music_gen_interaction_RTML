@@ -60,11 +60,13 @@ class GUI_OSC(QWidget):
         length, self.length_slider = self.add_slider("Length:", style, value=32, maximum=124, minimum=4)
         change_speed, self.change_speed_slider = self.add_slider("Transition speed:", style, value=80, maximum=200)
         volume, self.volume_slider = self.add_slider("Volume:", style, value=100, maximum=300)
+        weights_multiplier, self.weights_multiplier = self.add_slider("Weights Multiplier:", style, value=100, maximum=200)
 
         layout.addLayout(percentage)
         layout.addLayout(length)
         layout.addLayout(change_speed)
         layout.addLayout(volume)
+        layout.addLayout(weights_multiplier)
 
         # Record button
         hbox_record = QHBoxLayout()
@@ -119,9 +121,10 @@ class GUI_OSC(QWidget):
         change_speed = self.change_speed_slider.value()
         volume = self.volume_slider.value()
         model_i = self.model_select.currentIndex()
+        weights_multiplier = self.weights_multiplier.value()
 
-        print("Sending message=", [percentage, model_i, 0, requested_lenght, change_speed, volume])
-        self.osc.send_message(b'/send_i', [percentage, model_i, 0, requested_lenght, change_speed, volume])
+        print("Sending message=", [percentage, model_i, 0, requested_lenght, change_speed, volume, weights_multiplier])
+        self.osc.send_message(b'/send_i', [percentage, model_i, 0, requested_lenght, change_speed, volume, weights_multiplier])
 
     def recording_toggle(self):
         self.recButton_state = not self.recButton_state

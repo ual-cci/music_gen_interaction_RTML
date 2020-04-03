@@ -42,6 +42,7 @@ class ServerHandler(object):
         self.model_i = 0
         self.song_i = 0
         self.interactive_i = 0
+        self.weights_multiplier = 1.0
 
         self.audio_handler = audio_handler.AudioHandler(griffin_iterations=settings.griffin_iterations, sample_rate=settings.sample_rate,
                                                         fft_size=settings.fft_size, window_size=settings.window_size,
