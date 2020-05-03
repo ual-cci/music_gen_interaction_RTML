@@ -8,6 +8,11 @@ subprocess.run(["pkill", "-f", "server.py"]) # prevent frozen instances!
 subprocess.run(["pkill", "-f", "osc_interaction.py"]) # prevent frozen instances!
 subprocess.run(["pkill", "-f", "osc_interaction_pyqt.py"]) # prevent frozen instances!
 subprocess.run(["pkill", "-f", "osc_interaction_pyqt_plus_midi.py"]) # prevent frozen instances!
+# note: jackd might need
+# @audio          -       rtprio          99
+# in > /etc/security/limits.conf
+# and following:
+# sudo usermod -a -G audio [USERNAME]
 
 
 import pygame
