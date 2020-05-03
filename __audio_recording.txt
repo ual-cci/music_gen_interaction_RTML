@@ -1,0 +1,28 @@
+Recording on Linux:
+
+---------------------------------
+1. start in terminal:
+
+jackd -R -d alsa -r 44100
+qjackctl
+
+---------------------------------
+1b. Start code by "python demo.py" (will create thru_client)
+1c. Start OBS
+ - Create two instances of JACK Input Client)
+---------------------------------
+2. in qjackctl
+
+(possibly) Start and then Connect:
+
+thru_client / out_1 --> JACK Input Client 1 / in_1 a in_2
+
+(optionally - to also record mic)
+system / capture_1 --> JACK Input Client 2 / in_3
+system / capture_2 --> JACK Input Client 2 / in_4
+
+---------------------------------
+
+3. finally in OSB
+
+Separate channels of the recorded audio.
