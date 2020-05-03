@@ -33,7 +33,7 @@ class ServerHandler(object):
         self.continue_impulse_from_previous_batch = True
         # SPECIAL MODE - RESTART SEED EVERY "requested_length"-worth of generated music
         #    ... when self.continue_impulse_from_previous_batch is False
-        self.continue_impulse_from_previous_batch = False
+        #self.continue_impulse_from_previous_batch = False
 
         self.previous_audio_overlap = None
 
@@ -82,6 +82,9 @@ class ServerHandler(object):
         # Time on potato pc: Model loaded in 1.007, song loaded in 12.365 (sec).
 
         self.VERBOSE = 1
+
+        # Additional HAXs
+        self.extended_functionality_function = None
 
     def load_weights_ASYNC_FUNCTION(self, model_i):
 
@@ -302,6 +305,9 @@ class ServerHandler(object):
         if self.VERBOSE > 1:
             print("Percentage = ",perc, "(only this is new)")
 
+        # Additional HAXs
+        self.extended_functionality_spectrogram(predicted_spectrogram)
+
         audio = self.audio_handler.spectrogram2audio(predicted_spectrogram, method)
 
         print("precut audio.shape", audio.shape)
@@ -325,3 +331,10 @@ class ServerHandler(object):
         t_reconstruct = t_reconstruct_end - t_reconstruct_start
 
         return audio, t_predict, t_reconstruct
+
+
+    def extended_functionality_spectrogram(self, spectrogram):
+        if self.extended_functionality_function is not None:
+            self.extended_functionality_function(
+                spectrogram
+            )

@@ -71,6 +71,10 @@ class Server(object):
         serverside_handler.VERBOSE = SERVER_VERBOSE
         print('Server handler loaded.')
 
+        #### SPECIAL CODE
+        from resender import resender_function
+        serverside_handler.extended_functionality_function = resender_function
+
 
 
 @app.route("/handshake", methods=["POST"])
