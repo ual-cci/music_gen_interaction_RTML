@@ -5,16 +5,35 @@ def resender_function(arr):
 """
 
 def resender_function(arr):
+    # Send one frame only - the last generated one
+    #send_one_frame(arr)
+    send_all_gen_frames(arr)
+
+
+
+def send_one_frame(arr):
     last_spectum = arr[-1]
 
     low_frequencies = last_spectum[0:512]
 
-    print("HAX OUTPUT === ", low_frequencies.shape)
+    #print("HAX OUTPUT === ", low_frequencies.shape)
 
     global osc_handler
     osc_handler.send_arr(low_frequencies)
 
 
+def send_all_gen_frames(arr):
+    # settings/server sequence_length by default on 40
+    sequence_length = 40
+    global osc_handler
+    to_send = arr[sequence_length:]
+    for count, one_frame in enumerate(to_send):
+        
+        low_frequencies = one_frame[0:512]
+
+        #print("HAX OUTPUT === ", low_frequencies.shape)
+        if count % 4 == 0:
+            osc_handler.send_arr(low_frequencies)
 
 
 # https://github.com/kivy/oscpy
