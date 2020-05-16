@@ -4,11 +4,37 @@ def resender_function(arr):
     pass
 """
 
+from autoencoder.autoencoders_handler import process_using_VAE, to_latent_vector_using_VAE
+
 def resender_function(arr):
     # Send one frame only - the last generated one
     #send_one_frame(arr)
     send_all_gen_frames(arr)
+    #encode_spectrogram_VAE(arr)
 
+    #arr = process_spectrogram_VAE(arr)
+
+    # return spectrogram ...
+    return arr
+
+def process_spectrogram_VAE(arr):
+    print("processing")
+    processed = process_using_VAE(arr)
+    print("HAX OUTPUT === ", processed.shape)
+    return processed
+
+def encode_spectrogram_VAE(arr):
+    print("encoding")
+    latents = to_latent_vector_using_VAE(arr)
+    print("HAX OUTPUT === ", latents.shape)
+
+    sequence_length = 40
+    to_send = latents #[sequence_length:]
+    for count, one_frame in enumerate(to_send):
+
+        print("HAX OUTPUT === ", one_frame.shape)
+        if count % 4 == 0:
+            osc_handler.send_arr(one_frame)
 
 
 def send_one_frame(arr):

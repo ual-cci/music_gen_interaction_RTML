@@ -306,7 +306,7 @@ class ServerHandler(object):
             print("Percentage = ",perc, "(only this is new)")
 
         # Additional HAXs
-        self.extended_functionality_spectrogram(predicted_spectrogram)
+        predicted_spectrogram = self.extended_functionality_spectrogram(predicted_spectrogram)
 
         audio = self.audio_handler.spectrogram2audio(predicted_spectrogram, method)
 
@@ -335,6 +335,7 @@ class ServerHandler(object):
 
     def extended_functionality_spectrogram(self, spectrogram):
         if self.extended_functionality_function is not None:
-            self.extended_functionality_function(
+            spectrogram = self.extended_functionality_function(
                 spectrogram
             )
+        return spectrogram
