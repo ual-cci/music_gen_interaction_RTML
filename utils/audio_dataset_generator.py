@@ -18,7 +18,7 @@ class AudioDatasetGenerator:
     """
 
     def __init__(self, fft_size=2048, window_size=1024, hop_size=512,
-                 sequence_length=16, sample_rate=44100):
+                 sequence_length=16, sample_rate=44100, bake_npy_files = True):
         """Inits the class. Set the fft values to have a significant effect on
         the training of the neural network."""
         self.counter = 0
@@ -34,7 +34,7 @@ class AudioDatasetGenerator:
         self.is_shuffled = False
 
         # Save the dataset files directly? This will make it easier to reload, however also occupy a lot of space
-        self.bake_npy_files = True
+        self.bake_npy_files = bake_npy_files
 
     def load_from_wav_noSave(self, data_path, force_recalc=False, prevent_shuffling=False):
         if os.path.exists(data_path):
