@@ -182,8 +182,10 @@ def get_audio():
         if song_i != current_song_i:
             print("Loading new song data! (",song_i,")")
             t_load_song = timer()
-            #serverside_handler.load_impulses(song_i=song_i)
-            serverside_handler.load_impulses_ASYNC(song_i=song_i)
+            if serverside_handler.settings.async_loading:
+                serverside_handler.load_impulses_ASYNC(song_i=song_i)
+            else:
+                serverside_handler.load_impulses(song_i=song_i)
             t_load_song = timer() - t_load_song
             print("Loading took = ", t_load_song, "sec")
 
@@ -191,8 +193,11 @@ def get_audio():
             print("Loading new model weights! (",model_i,")")
             t_load_model = timer()
             ##serverside_handler.model_handler.create_model() # << REDO EVERYTHING? Hope that it wont be needed
-            #serverside_handler.load_weights(model_i=model_i)
-            serverside_handler.load_weights_ASYNC(model_i=model_i)
+            if serverside_handler.settings.async_loading:
+                serverside_handler.load_weights_ASYNC(model_i=model_i)
+            else:
+                serverside_handler.load_weights(model_i=model_i)
+
             t_load_model = timer() - t_load_model
             print("Loading took = ", t_load_model, "sec")
 
@@ -304,6 +309,7 @@ if __name__ == "__main__":
     parser.add_argument('-griffin_iterations', help='iterations to use in griffin reconstruction', default='60')
     parser.add_argument('-sample_rate', help='sample_rate', default='44100')
     parser.add_argument('-sequence_length', help='sequence_length', default='40')
+    parser.add_argument('-async_loading', help='async_loading, if we allow for async change between loaded models / songs', default='False')
     args = parser.parse_args()
 
     args.sample_rate = '22050'

@@ -22,6 +22,7 @@ class Settings(object):
             self.lstm_units = int(args.lstm_units)
             self.griffin_iterations = int(args.griffin_iterations)
             self.sample_rate = int(args.sample_rate)
+            self.async_loading = (args.async_loading == "True")
 
             self.fft_size = 2048
             self.window_size = 1024
