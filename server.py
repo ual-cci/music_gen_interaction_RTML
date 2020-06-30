@@ -309,7 +309,7 @@ if __name__ == "__main__":
     parser.add_argument('-griffin_iterations', help='iterations to use in griffin reconstruction', default='60')
     parser.add_argument('-sample_rate', help='sample_rate', default='44100')
     parser.add_argument('-sequence_length', help='sequence_length', default='40')
-    parser.add_argument('-async_loading', help='async_loading, if we allow for async change between loaded models / songs', default='False')
+    parser.add_argument('-async_loading', help='async_loading, if we allow for async change between loaded models / songs', default='True')
     args = parser.parse_args()
 
     args.sample_rate = '22050'
