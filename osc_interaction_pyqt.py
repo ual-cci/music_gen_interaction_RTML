@@ -57,7 +57,7 @@ class GUI_OSC(QWidget):
 
         # Sliders
         percentage, self.percentage_slider = self.add_slider("Relative position in audio:", style, value=200, maximum=1000)
-        length, self.length_slider = self.add_slider("Length:", style, value=32, maximum=124, minimum=4)
+        length, self.length_slider = self.add_slider("Length:", style, value=64, maximum=124, minimum=4)
         change_speed, self.change_speed_slider = self.add_slider("Transition speed:", style, value=80, maximum=200)
         volume, self.volume_slider = self.add_slider("Volume:", style, value=100, maximum=300)
         weights_multiplier, self.weights_multiplier = self.add_double_slider("Weights Multiplier:", style, minimum=-1, value=1, maximum=2)

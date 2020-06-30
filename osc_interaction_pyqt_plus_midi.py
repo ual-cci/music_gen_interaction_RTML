@@ -27,7 +27,7 @@ class GUI_OSC(QWidget):
     MIN_POSITION = 0
     MAX_POSITION = 1000
 
-    DEFAULT_LENGTH = 32
+    DEFAULT_LENGTH = 64 #32
     DEFAULT_CHANGESPEED = 80
     DEFAULT_VOLUME = 100
     # default selected song i = 0

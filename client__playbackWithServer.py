@@ -133,7 +133,7 @@ SIGNAL_interactive_i = 0.2
 SIGNAL_model_i = 0 #< if i want it to start with it, hardcode it here for now
 SIGNAL_song_i = 0
 
-SIGNAL_requested_lenght = 32 # lets start with small
+SIGNAL_requested_lenght = 64 #32 # lets start with small
 WAIT_if_qout_larger_div = 2
 
 VOLUME = 100
