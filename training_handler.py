@@ -165,7 +165,7 @@ class TrainingHandler(object):
 
         for music_i, music_file in enumerate(music_files):
             audio_tag = music_file.split("/")[-1].replace(".", "_")
-            model_name = "__custom_saved_models/Model_" + audio_tag
+            model_name = "__saved_models/Model_" + audio_tag
 
             print("[[[[ Training on music", music_i, "/", len(music_files), ":", music_file)
 
