@@ -159,24 +159,36 @@ class TrainingHandler(object):
             with new_graph.as_default():
                 self.train_on_file(music_file, model_name)
 
+    def demo_on_file(self, target_file):
+
+        music_files = [ target_file ]
+
+        for music_i, music_file in enumerate(music_files):
+            audio_tag = music_file.split("/")[-1].replace(".", "_")
+            model_name = "__custom_saved_models/Model_" + audio_tag
+
+            print("[[[[ Training on music", music_i, "/", len(music_files), ":", music_file)
+
+            new_graph = tf.Graph()
+            with new_graph.as_default():
+                self.train_on_file(music_file, model_name)
+
 
 if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description='TrainerHandler for Project: Real Time Audio Generation.')
+    parser.add_argument('-target_file', help='folder with wav files', default='__custom_music_samples/sample/sample.wav')
     parser.add_argument('-lstm_layers', help='number of LSTM layers the model should have', default='3')
     parser.add_argument('-lstm_units', help='number of units in each LSTM layer', default='128')
     parser.add_argument('-griffin_iterations', help='iterations to use in griffin reconstruction', default='60')
-    parser.add_argument('-sample_rate', help='sample_rate', default='44100')
+    parser.add_argument('-sample_rate', help='sample_rate', default='22050')
 
     parser.add_argument('-amount_epochs', help='amount_epochs', default='300')
     parser.add_argument('-batch_size', help='batch_size', default='64')
 
     parser.add_argument('-sequence_length', help='sequence_length', default='40')
     args = parser.parse_args()
-    args.sample_rate = '22050'
-
-    args.amount_epochs = 300
 
     trainer = TrainingHandler(args)
 
