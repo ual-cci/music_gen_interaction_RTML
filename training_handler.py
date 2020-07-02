@@ -192,4 +192,4 @@ if __name__ == "__main__":
 
     trainer = TrainingHandler(args)
 
-    trainer.demo_on_folder_of_files()
+    trainer.demo_on_file(args.target_file)
