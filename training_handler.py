@@ -38,6 +38,7 @@ class TrainingHandler(object):
     """
 
     def __init__(self, args):
+        args.async_loading = "True"
         self.settings = settings.Settings(args)
         self.settings.print_settings()
 
