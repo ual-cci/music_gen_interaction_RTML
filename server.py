@@ -304,11 +304,12 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description='Project: Real Time Audio Generation.')
-    parser.add_argument('-lstm_layers', help='number of LSTM layers the model should have', default='3')
-    parser.add_argument('-lstm_units', help='number of units in each LSTM layer', default='128')
-    parser.add_argument('-griffin_iterations', help='iterations to use in griffin reconstruction', default='60')
-    parser.add_argument('-sample_rate', help='sample_rate', default='44100')
-    parser.add_argument('-sequence_length', help='sequence_length', default='40')
+    parser.add_argument('-lstm_layers', help='number of LSTM layers the model should have (default and suggested value, 3)', default='3')
+    parser.add_argument('-lstm_units', help='number of units in each LSTM layer (default and suggested value, 128)', default='128')
+    parser.add_argument('-griffin_iterations', help='iterations to use in griffin reconstruction; lower number faster and lower quality of reconstructed signal (default value, 60)', default='60')
+    parser.add_argument('-sample_rate', help='sampling rate under which we represent the music data (default and suggested value, 22050)', default='22050')
+    parser.add_argument('-sequence_length', help='sequence length of each block of data when training on the task to predict the next single frame from this block of data (default and suggested value, 40)', default='40')
+
     parser.add_argument('-async_loading', help='async_loading, if we allow for async change between loaded models / songs', default='True')
     args = parser.parse_args()
 
