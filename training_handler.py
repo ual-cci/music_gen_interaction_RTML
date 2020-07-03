@@ -45,6 +45,8 @@ class TrainingHandler(object):
 
     def plot_losses(self, losses, filename):
         fig, ax = plt.subplots()
+        print("losses to plot:", losses)
+
         ax.plot(losses)
 
         ax.set(xlabel='epoch', ylabel='loss',
@@ -104,14 +106,15 @@ class TrainingHandler(object):
 
         # Train!
         losses = []
-        #monitorCallback = TrainingMonitorCallback(losses)
+        monitorCallback = TrainingMonitorCallback(losses)
 
         model_handler.model.fit(dataset.x_frames, dataset.y_frames, show_metric=True, batch_size=model_handler.batch_size,
-                                n_epoch=model_handler.amount_epochs)#, callbacks=[monitorCallback])
+                                n_epoch=model_handler.amount_epochs, callbacks=[monitorCallback])
 
         # Save plot
         print("report >>>", losses)
-        self.plot_losses(losses, model_name)
+        print("report >>>", monitorCallback.record)
+        self.plot_losses(monitorCallback.record, model_name)
 
         # Save model
         model_handler.model.save(model_name)
@@ -165,7 +168,7 @@ class TrainingHandler(object):
 
         for music_i, music_file in enumerate(music_files):
             audio_tag = music_file.split("/")[-1].replace(".", "_")
-            model_name = "__saved_models/Model_" + audio_tag
+            model_name = "__saved_models/Model_" + audio_tag + ".tfl"
 
             print("[[[[ Training on music", music_i, "/", len(music_files), ":", music_file)
 
