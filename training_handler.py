@@ -99,7 +99,7 @@ class TrainingHandler(object):
         model_name = model_name + "griff" + str(self.settings.griffin_iterations) + "_"
         model_name = model_name + "_"
         model_name = model_name + "train" + str(self.settings.amount_epochs) + "epX" + str(self.settings.batch_size) + "bt_"
-        model_name = model_name + "_" + str(self.settings.sequence_length)+"seq"
+        model_name = model_name + "_" + str(self.settings.sequence_length)+"seq" + ".tfl"
 
         print("Model = |", model_name, "|")
 
@@ -168,7 +168,7 @@ class TrainingHandler(object):
 
         for music_i, music_file in enumerate(music_files):
             audio_tag = music_file.split("/")[-1].replace(".", "_")
-            model_name = "__saved_models/Model_" + audio_tag + ".tfl"
+            model_name = "__saved_models/Model_" + audio_tag
 
             print("[[[[ Training on music", music_i, "/", len(music_files), ":", music_file)
 
