@@ -3,6 +3,10 @@ Vitek's interactive music generation project, aiming at real-time speeds and int
 
 Ideally we will have a strong PC with good GPU as a server and any machine (eg. my potato laptop) connecting to it. Another version is with having a Google Cloud Virtual Machine as the server (which works, but has availability and slow connectivity issues). Finally it can all run on one machine.
 
+## Docker demo
+
+Please for the easiest setup, see our instructions on running a nvidia Docker container with our code: https://hub.docker.com/repository/docker/previtus/demo-lstm-music-gen
+
 ## Install:
 Project is work in progress, so this will likely change and grow ...
 
