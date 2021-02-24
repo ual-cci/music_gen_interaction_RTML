@@ -20,7 +20,7 @@ class ServerHandler(object):
 
     """
 
-    def __init__(self, settings):
+    def __init__(self, settings, manual_loading = False):
         settings.print_settings()
         self.settings = settings
 
@@ -61,30 +61,64 @@ class ServerHandler(object):
         #self.model_handler.create_model()
         print("Created model:", self.model_handler.model)
 
-        self.songs_models = cooked_files_handler.CookedFilesHandler(settings)
-        self.songs_models.prepare_songs_models_paths()
+        if not manual_loading:
 
-        # Load model weights & song impulses
-        t_load_model = timer()
-        self.load_weights(model_i = self.model_i)
-        t_load_model = timer()-t_load_model
+            self.songs_models = cooked_files_handler.CookedFilesHandler(settings)
+            self.songs_models.prepare_songs_models_paths()
 
-        t_load_song = timer()
-        if self.preloaded_impulses is None:
-            print("Also have to load the song")
-            # this happens in Regular load mode (aka with older models)
-            self.load_impulses(song_i= self.song_i) # no need we have the first one with the weights already
-            self.change_impulse(interactive_i = self.interactive_i)
-        t_load_song = timer()-t_load_song
+            # Load model weights & song impulses
+            t_load_model = timer()
+            self.load_weights(model_i = self.model_i)
+            t_load_model = timer()-t_load_model
 
-        #print("Model loaded in", t_load_model, ", song loaded in", t_load_song, "(sec).")
-        print("Model and song loaded in", t_load_model, "(sec).")
-        # Time on potato pc: Model loaded in 1.007, song loaded in 12.365 (sec).
+            t_load_song = timer()
+            if self.preloaded_impulses is None:
+                print("Also have to load the song")
+                # this happens in Regular load mode (aka with older models)
+                self.load_impulses(song_i= self.song_i) # no need we have the first one with the weights already
+                self.change_impulse(interactive_i = self.interactive_i)
+            t_load_song = timer()-t_load_song
+
+            #print("Model loaded in", t_load_model, ", song loaded in", t_load_song, "(sec).")
+            print("Model and song loaded in", t_load_model, "(sec).")
+            # Time on potato pc: Model loaded in 1.007, song loaded in 12.365 (sec).
 
         self.VERBOSE = 1
 
         # Additional HAXs
         self.extended_functionality_function = None
+
+    def manual_init_song_model(self, song_file, model_file):
+        self.songs_models = cooked_files_handler.CookedFilesHandler(self.settings)
+        self.songs_models = [model_file]
+        self.song_paths = [song_file]
+        self.model_i = 0
+        self.song_i = 0
+
+        print("We have loaded these songs and models (ps: their order should match, please name them accordingly):")
+        print("models:")
+        for m in self.model_paths:
+            print(m)
+        print("songs:")
+        for s in self.song_paths:
+            print(s)
+
+        # Load model weights & song impulses
+        t_load_model = timer()
+        self.load_weights(model_i=self.model_i)
+        t_load_model = timer() - t_load_model
+
+        t_load_song = timer()
+        if self.preloaded_impulses is None:
+            print("Also have to load the song")
+            # this happens in Regular load mode (aka with older models)
+            self.load_impulses(song_i=self.song_i)  # no need we have the first one with the weights already
+            self.change_impulse(interactive_i=self.interactive_i)
+        t_load_song = timer() - t_load_song
+
+        # print("Model loaded in", t_load_model, ", song loaded in", t_load_song, "(sec).")
+        print("Model and song loaded in", t_load_model, "(sec).")
+        # Time on potato pc: Model loaded in 1.007, song loaded in 12.365 (sec).
 
     def load_weights_ASYNC_FUNCTION(self, model_i):
 
