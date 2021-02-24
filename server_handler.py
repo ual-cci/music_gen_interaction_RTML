@@ -107,7 +107,7 @@ class ServerHandler(object):
 
         # Load model weights & song impulses
         t_load_model = timer()
-        self.load_weights(model_i=self.model_i)
+        self.load_weights(model_i=self.model_i, mode='graph')
         t_load_model = timer() - t_load_model
 
         t_load_song = timer()
@@ -160,11 +160,11 @@ class ServerHandler(object):
 
         self.model_i = model_i
 
-    def load_weights(self, model_i):
+    def load_weights(self, model_i, mode=''):
         model_path = self.songs_models.model_paths[model_i]
         print("Loading ...", model_path.split("/")[-1])
 
-        if "Model_" not in model_path:
+        if ("Model_" not in model_path) or (mode != 'graph'):
             print("Regular load")
             self.model_handler.create_model()
 
