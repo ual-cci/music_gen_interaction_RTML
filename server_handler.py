@@ -90,17 +90,17 @@ class ServerHandler(object):
 
     def manual_init_song_model(self, song_file, model_file):
         self.songs_models = cooked_files_handler.CookedFilesHandler(self.settings)
-        self.songs_models = [model_file]
-        self.song_paths = [song_file]
+        self.songs_models.model_paths = [model_file]
+        self.songs_models.song_paths = [song_file]
         self.model_i = 0
         self.song_i = 0
 
         print("We have loaded these songs and models (ps: their order should match, please name them accordingly):")
         print("models:")
-        for m in self.model_paths:
+        for m in self.songs_models.model_paths:
             print(m)
         print("songs:")
-        for s in self.song_paths:
+        for s in self.songs_models.song_paths:
             print(s)
 
         # Load model weights & song impulses

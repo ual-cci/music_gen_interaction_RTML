@@ -36,6 +36,7 @@ class CookedFilesHandler(object):
         song_paths = sorted(song_paths)
         self.song_paths = [song_paths_start+s+"/" for s in song_paths]
 
+        """
         print("prepared", len(self.model_paths), "models and ", len(self.song_paths), "songs.")
 
         print("We have loaded these songs and models (ps: their order should match, please name them accordingly):")
@@ -45,3 +46,4 @@ class CookedFilesHandler(object):
         print("songs:")
         for s in self.song_paths:
             print(s)
+        """
