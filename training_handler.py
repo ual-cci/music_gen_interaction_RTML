@@ -93,7 +93,7 @@ class TrainingHandler(object):
         # - sample22khz_
         # - griff60_
 
-        if self.settings.model_name == '': # default naming scheme
+        if model_name == '': # default naming scheme
             audio_tag = music_file.split("/")[-1].replace(".", "_")
             model_name = "Model_" + audio_tag + "_" + str(self.settings.lstm_layers) + "x" + str(self.settings.lstm_units) + "_"
             model_name = model_name + "sample" + str(int(self.settings.sample_rate/1000)) + "khz_"
