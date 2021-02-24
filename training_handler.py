@@ -73,7 +73,7 @@ class TrainingHandler(object):
 
             librosa.output.write_wav(filename+"_sample_"+str(i)+".wav", audio, self.settings.sample_rate)
 
-    def train_on_file(self, music_file, model_name = "trained_models/tmp"):
+    def train_on_file(self, music_file, model_name):
         # keep this in debug record
         self.settings.debug_file = music_file
 
@@ -93,13 +93,17 @@ class TrainingHandler(object):
         # - sample22khz_
         # - griff60_
 
-        model_name = model_name + str(self.settings.lstm_layers) + "x" + str(self.settings.lstm_units) + "_"
-        model_name = model_name + "sample" + str(int(self.settings.sample_rate/1000)) + "khz_"
-        # if griff?
-        model_name = model_name + "griff" + str(self.settings.griffin_iterations) + "_"
-        model_name = model_name + "_"
-        model_name = model_name + "train" + str(self.settings.amount_epochs) + "epX" + str(self.settings.batch_size) + "bt_"
-        model_name = model_name + "_" + str(self.settings.sequence_length)+"seq" + ".tfl"
+        if self.settings.args.model_name == '': # default naming scheme
+            audio_tag = music_file.split("/")[-1].replace(".", "_")
+            model_name = "Model_" + audio_tag + "_" + str(self.settings.lstm_layers) + "x" + str(self.settings.lstm_units) + "_"
+            model_name = model_name + "sample" + str(int(self.settings.sample_rate/1000)) + "khz_"
+            # if griff?
+            model_name = model_name + "griff" + str(self.settings.griffin_iterations) + "_"
+            model_name = model_name + "_"
+            model_name = model_name + "train" + str(self.settings.amount_epochs) + "epX" + str(self.settings.batch_size) + "bt_"
+            model_name = model_name + "_" + str(self.settings.sequence_length)+"seq" + ".tfl"
+        else:
+            model_name = model_name + ".tfl"
 
         print("Model = |", model_name, "|")
 
@@ -125,7 +129,8 @@ class TrainingHandler(object):
         print("Trained ", model_name,  "successfully ...")
 
         # Save samples
-        self.sample(model_handler, dataset, model_name, n_samples = 5)
+        if self.settings.sample_after_training > 0:
+            self.sample(model_handler, dataset, model_name, n_samples = self.settings.samples_after_training)
 
         # cleanup!
         del dataset
@@ -162,26 +167,21 @@ class TrainingHandler(object):
             with new_graph.as_default():
                 self.train_on_file(music_file, model_name)
 
-    def demo_on_file(self, target_file):
+    def demo_on_file(self, target_file, model_name):
+        print("[[[[ Training on music file", target_file, " - will save the model as ", model_name)
 
-        music_files = [ target_file ]
-
-        for music_i, music_file in enumerate(music_files):
-            audio_tag = music_file.split("/")[-1].replace(".", "_")
-            model_name = "__saved_models/Model_" + audio_tag
-
-            print("[[[[ Training on music", music_i, "/", len(music_files), ":", music_file)
-
-            new_graph = tf.Graph()
-            with new_graph.as_default():
-                self.train_on_file(music_file, model_name)
+        new_graph = tf.Graph()
+        with new_graph.as_default():
+            self.train_on_file(target_file, model_name)
 
 
 if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description='TrainerHandler for Project: Real Time Audio Generation.')
-    parser.add_argument('-target_file', help='folder with wav files', default='__custom_music_samples/sample/sample.wav')
+    parser.add_argument('-target_file', help='path to the wav file', default='__custom_music_samples/sample/sample.wav')
+    parser.add_argument('-model_name', help='where to save the model (if left empty it will use the default naming scheme)', default='')
+
     parser.add_argument('-lstm_layers', help='number of LSTM layers the model should have (default and suggested value, 3)', default='3')
     parser.add_argument('-lstm_units', help='number of units in each LSTM layer (default and suggested value, 128)', default='128')
     parser.add_argument('-griffin_iterations', help='iterations to use in griffin reconstruction; lower number faster and lower quality of reconstructed signal (default value, 60)', default='60')
@@ -191,8 +191,11 @@ if __name__ == "__main__":
     parser.add_argument('-batch_size', help='batch size for number of frames that the LSTM model is training on; lower number will lead to lower GPU memory requirements during training (default and suggested value, 64)', default='64')
 
     parser.add_argument('-sequence_length', help='sequence length of each block of data when training on the task to predict the next single frame from this block of data (default and suggested value, 40)', default='40')
+    parser.add_argument('-gensamples', help='how many samples we immediately generate samples from the trained models (default 0)', default='0')
     args = parser.parse_args()
 
     trainer = TrainingHandler(args)
 
-    trainer.demo_on_file(args.target_file)
+    trainer.settings.samples_after_training = int(args.gensamples)
+
+    trainer.demo_on_file(args.target_file, args.model_name)
