@@ -89,9 +89,11 @@ class ServerHandler(object):
         self.extended_functionality_function = None
 
     def manual_init_song_model(self, song_file, model_file):
-        self.songs_models = cooked_files_handler.CookedFilesHandler(self.settings)
+        self.songs_models = cooked_files_handler.CookedFilesHandler(self.settings, False)
         self.songs_models.model_paths = [model_file]
         self.songs_models.song_paths = [song_file]
+        self.songs_models.names_for_debug = [song_file]
+
         self.model_i = 0
         self.song_i = 0
 

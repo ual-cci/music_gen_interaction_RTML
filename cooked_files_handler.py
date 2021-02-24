@@ -6,9 +6,10 @@ class CookedFilesHandler(object):
 
     """
 
-    def __init__(self, settings):
+    def __init__(self, settings, autoload=True):
         self.settings = settings
-        self.prepare_songs_models_paths()
+        if autoload:
+            self.prepare_songs_models_paths()
 
     def prepare_songs_models_paths(self):
         # from model_i and song_i
