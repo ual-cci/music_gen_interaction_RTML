@@ -164,7 +164,7 @@ class ServerHandler(object):
         model_path = self.songs_models.model_paths[model_i]
         print("Loading ...", model_path.split("/")[-1])
 
-        if ("Model_" not in model_path) or (mode != 'graph'):
+        if ("Model_" not in model_path) and (mode != 'graph'):
             print("Regular load")
             self.model_handler.create_model()
 
