@@ -33,15 +33,15 @@ def VAE_data_reconstruct(train):
 
 def load_AE():
     #### problem ... used tf's Keras ... duh
-    ae_encoder = load_model('/media/ekmek/Vitek/Vitek2020/PythonProjects/music_gen_interaction_RTML/autoencoder/saved_model_4-goodfitIhope-40ep/encoder.h5')
+    ae_encoder = load_model('autoencoder/saved_model_4-goodfitIhope-40ep/encoder.h5')
     ae_encoder.summary()
     return ae_encoder
 
 
 def load_VAE():
-    vae_encoder = load_model('/media/ekmek/Vitek/Vitek2020/PythonProjects/music_gen_interaction_RTML/autoencoder/saved_model_vae_2/encoder.h5')
+    vae_encoder = load_model('autoencoder/saved_model_vae_2/encoder.h5')
     vae_encoder.summary()
-    vae_decoder = load_model('/media/ekmek/Vitek/Vitek2020/PythonProjects/music_gen_interaction_RTML/autoencoder/saved_model_vae_2/decoder.h5')
+    vae_decoder = load_model('autoencoder/saved_model_vae_2/decoder.h5')
     vae_decoder.summary()
     return vae_encoder, vae_decoder
 
@@ -75,6 +75,6 @@ def process_using_VAE(data):
     #print(np.min(diff), np.max(diff), np.mean(diff), np.std(diff))
     return foo
 
+#data = np.random.rand(20, 1025)
+#reconstruction = process_using_VAE(data)
 
-data = np.random.rand(20, 1025)
-reconstruction = process_using_VAE(data)

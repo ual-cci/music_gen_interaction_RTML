@@ -127,10 +127,9 @@ class TrainingHandler(object):
         self.settings.save_into_txt(model_name)
 
         print("Trained ", model_name,  "successfully ...")
-
         # Save samples
-        if self.settings.sample_after_training > 0:
-            self.sample(model_handler, dataset, model_name, n_samples = self.settings.samples_after_training)
+        if int(args.gensamples) > 0:
+            self.sample(model_handler, dataset, model_name, n_samples = int(args.gensamples))
 
         # cleanup!
         del dataset
