@@ -1,0 +1,6 @@
+# default repo
+git push
+
+# ual repo
+git push ualremote master
+
