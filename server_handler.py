@@ -123,7 +123,7 @@ class ServerHandler(object):
         # Time on potato pc: Model loaded in 1.007, song loaded in 12.365 (sec).
 
     def load_weights_ASYNC_FUNCTION(self, model_i):
-
+        print("debug-called load_weights_ASYNC_FUNCTION: model_i=",model_i,) 
         model_path = self.songs_models.model_paths[model_i]
         print("Loading ...", model_path.split("/")[-1])
 
@@ -152,7 +152,7 @@ class ServerHandler(object):
 
     def load_weights_ASYNC(self, model_i):
         """ Load on another thread, only then swap self.preloaded_impulses + self.model_handler.load_model(model_path) """
-
+        print("debug-called load_weights_ASYNC: model_i=",model_i) 
         threads = []
         t = threading.Thread(target=self.load_weights_ASYNC_FUNCTION, args=(model_i,))
         threads.append(t)
@@ -161,6 +161,7 @@ class ServerHandler(object):
         self.model_i = model_i
 
     def load_weights(self, model_i, mode=''):
+        print("debug-called load_weights: model_i=",model_i, "mode=",mode) 
         model_path = self.songs_models.model_paths[model_i]
         print("Loading ...", model_path.split("/")[-1])
 
@@ -192,6 +193,7 @@ class ServerHandler(object):
             tmp_settings = Settings()
             tmp_settings.load_from_txt(settings_file)
             audio_file = tmp_settings.debug_file
+            audio_file=audio_file.replace("/home/vitek/Projects/music_gen_interaction_RTML/new_audio_samples/whole_wavs/", "__music_samples/") #new_audio_samples/whole_wavs/Hooverphonic_RenaissanceAffair.mp3.wav'"
             dataset = self.audio_handler.load_dataset(audio_file)
 
             self.preloaded_impulses = dataset.x_frames
@@ -200,7 +202,7 @@ class ServerHandler(object):
         self.model_i = model_i
 
     def load_impulses_ASYNC_FUNCTION(self, song_i):
-
+        print("debug-called load_impulses_ASYNC_FUNCTION: song_i=",song_i) 
         song_path = self.songs_models.song_paths[song_i]
         print("Loading music data...", song_path.split("/")[-2:])
 
@@ -232,7 +234,7 @@ class ServerHandler(object):
 
     def load_impulses_ASYNC(self, song_i):
         """ Load on another thread, only then swap self.preloaded_impulses + self.model_handler.load_model(model_path) """
-
+        print("debug-called load_impulses_ASYNC: song_i=",song_i) 
         threads = []
         t = threading.Thread(target=self.load_impulses_ASYNC_FUNCTION, args=(song_i,))
         threads.append(t)
@@ -249,7 +251,7 @@ class ServerHandler(object):
             print("[WARN!] No impulses for loading! Will generate some nonesence instead, but it won't really work.")
             self.preloaded_impulses = np.random.rand(4, 40, 1025)
         """
-
+        print("debug-called load_impulses: song_i=",song_i) 
         song_path = self.songs_models.song_paths[song_i]
         print("Loading music data...", song_path.split("/")[-2:])
 

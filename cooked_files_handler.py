@@ -17,12 +17,13 @@ class CookedFilesHandler(object):
 
         # Get a list of "*.tfl.data-00000-of-00001" files
         import glob
-        model_paths = glob.glob(model_path_start+"*.tfl.data-00000-of-00001")
+        model_paths = glob.glob(model_path_start+"*.data-00000-of-00001")
+        #model_paths = glob.glob(model_path_start+"*.tfl.data-00000-of-00001")
         model_paths = sorted(model_paths)
-        print(model_paths)
+        print("model_paths=",model_paths)
 
         model_paths = [p.replace(".tfl.data-00000-of-00001", ".tfl") for p in model_paths]
-
+        model_paths = [p.replace(".data-00000-of-00001", "") for p in model_paths]
         self.model_paths = model_paths
 
         # Loading from WAVs will be slow ... maybe load from the NPY's directly?

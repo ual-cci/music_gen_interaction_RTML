@@ -13,9 +13,8 @@ Project is work in progress, so this will likely change and grow ...
 - `pip install Pillow numpy opencv-python PyWavelets tqdm slugify`
 - `pip install -U Flask`
 - `pip install lws==1.2.6`
-- `pip install tflearn`
 - `pip install librosa==0.7.2`
-- `pip install keras==2.2.4 h5py==2.10.0`
+- `pip install h5py==2.10.0 keras==2.2.4 tflearn==0.3.2`
 - `pip install numba==0.49.1`
 - `jackd` (https://jackaudio.org/) and the python client library from https://github.com/spatialaudio/jackclient-python/
   - `sudo apt-get install jack-tools`

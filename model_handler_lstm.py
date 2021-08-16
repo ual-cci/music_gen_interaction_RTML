@@ -105,6 +105,7 @@ class ModelHandlerLSTM(object):
         #    print(tensor_name, '\n')
 
         self.model.load(path)
+        print("finished lstm / load_model")
 
     def create_model(self):
         # x data (22983, 40, 1025)

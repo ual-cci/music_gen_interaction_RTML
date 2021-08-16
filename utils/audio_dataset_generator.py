@@ -58,7 +58,7 @@ class AudioDatasetGenerator:
         if prevent_shuffling:
             npy_filename = "_frames_NotShuffled.npy"
 
-        just_folder = "/".join(data_path.split("/")[0:-2])
+        just_folder = "/".join(data_path.split("/")[0:-1]) # or -2 depends on the files struct ...
         just_file = data_path.split("/")[-1]
         just_file = just_file.replace(".wav","")
 
